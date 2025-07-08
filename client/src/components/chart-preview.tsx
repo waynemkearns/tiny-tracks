@@ -58,7 +58,7 @@ export default function ChartPreview({ babyId }: ChartPreviewProps) {
         <div className="flex items-end justify-between space-x-1 h-16">
           {weeklyStats.daily.map((day, index) => {
             const isToday = index === 6;
-            return renderBar(day.feedCount, maxFeeds, 'bg-blue-400', isToday);
+            return <div key={`feed-${day.date}`}>{renderBar(day.feedCount, maxFeeds, 'bg-blue-400', isToday)}</div>;
           })}
         </div>
         <div className="flex justify-between text-xs text-blue-600 mt-1">
@@ -77,7 +77,7 @@ export default function ChartPreview({ babyId }: ChartPreviewProps) {
           {weeklyStats.daily.map((day, index) => {
             const isToday = index === 6;
             const sleepHours = day.sleepDuration / 60;
-            return renderBar(sleepHours, maxSleep / 60, 'bg-purple-400', isToday);
+            return <div key={`sleep-${day.date}`}>{renderBar(sleepHours, maxSleep / 60, 'bg-purple-400', isToday)}</div>;
           })}
         </div>
         <div className="flex justify-between text-xs text-purple-600 mt-1">

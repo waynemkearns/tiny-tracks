@@ -1,46 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Edit, Baby as BabyIcon, Settings, Share2, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import BottomNavigation from "@/components/bottom-navigation";
-import { useLocation } from "wouter";
-import { apiRequest } from "@/lib/queryClient";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import type { Baby } from "@shared/schema";
 
 export default function Profile() {
-  const [, navigate] = useLocation();
-  const [isEditingBaby, setIsEditingBaby] = useState(false);
-  const [babyName, setBabyName] = useState('');
-  const [babyBirthDate, setBabyBirthDate] = useState('');
-  const [babyGender, setBabyGender] = useState('');
-  
-  // Settings state
+  const [isEditing, setIsEditing] = useState(false);
+  const [babyName, setBabyName] = useState("");
+  const [babyBirthDate, setBabyBirthDate] = useState("");
+  const [babyGender, setBabyGender] = useState("");
   const [notifications, setNotifications] = useState(true);
-  const [feedReminders, setFeedReminders] = useState(true);
-  const [sleepTracking, setSleepTracking] = useState(true);
-  const [dataSync, setDataSync] = useState(true);
+  const [shareData, setShareData] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const babyId = 1; // Demo baby ID
 
-  const { data: baby } = useQuery<Baby>({
+  const { data: baby, isLoading } = useQuery<Baby>({
     queryKey: [`/api/babies/${babyId}`],
-    onSuccess: (data) => {
-      if (data) {
-        setBabyName(data.name);
-        setBabyBirthDate(format(new Date(data.birthDate), 'yyyy-MM-dd'));
-        setBabyGender(data.gender || '');
-      }
-    },
   });
+
+  // Update form fields when baby data loads
+  useEffect(() => {
+    if (baby) {
+      setBabyName(baby.name || '');
+      if (baby.birthDate) {
+        try {
+          const date = new Date(baby.birthDate);
+          if (!isNaN(date.getTime())) {
+            setBabyBirthDate(format(date, 'yyyy-MM-dd'));
+          } else {
+            setBabyBirthDate('2024-01-15');
+          }
+        } catch (error) {
+          setBabyBirthDate('2024-01-15');
+        }
+      }
+      setBabyGender(baby.gender || '');
+    }
+  }, [baby]);
 
   const updateBabyMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -49,284 +57,175 @@ export default function Profile() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/babies/${babyId}`] });
       toast({ title: "Baby profile updated successfully!" });
-      setIsEditingBaby(false);
+      setIsEditing(false);
     },
     onError: () => {
-      toast({ title: "Failed to update baby profile", variant: "destructive" });
+      toast({ title: "Failed to update profile", variant: "destructive" });
     },
   });
 
-  const handleSaveBaby = () => {
-    const babyData = {
-      name: babyName,
-      birthDate: new Date(babyBirthDate).toISOString(),
-      gender: babyGender,
-    };
-
-    updateBabyMutation.mutate(babyData);
-  };
-
-  const calculateAge = (birthDate: string) => {
-    const birth = new Date(birthDate);
-    const now = new Date();
-    const ageInMonths = Math.floor((now.getTime() - birth.getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-    const months = ageInMonths % 12;
-    const years = Math.floor(ageInMonths / 12);
-    
-    if (years > 0) {
-      return `${years} year${years > 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
+  const handleSave = () => {
+    if (!babyName.trim()) {
+      toast({ title: "Please enter a name", variant: "destructive" });
+      return;
     }
-    return `${ageInMonths} month${ageInMonths !== 1 ? 's' : ''}`;
-  };
 
-  const exportAllData = () => {
-    // This would trigger a full data export
-    toast({ title: "Full data export started. Check your downloads folder." });
-  };
-
-  const clearAllData = () => {
-    // This would show a confirmation dialog for data clearing
-    toast({ 
-      title: "Data clearing requires confirmation", 
-      description: "This feature would show a confirmation dialog in a full implementation."
+    updateBabyMutation.mutate({
+      name: babyName,
+      birthDate: babyBirthDate,
+      gender: babyGender || null,
     });
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4">
+        <div className="animate-pulse">Loading...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-primary text-white p-4 flex items-center">
-        <Button variant="ghost" size="icon" className="text-white mr-3" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <h1 className="text-lg font-semibold">Profile & Settings</h1>
-      </header>
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" className="p-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-semibold text-gray-900">Profile</h1>
+          </div>
+          <Button 
+            variant={isEditing ? "default" : "ghost"} 
+            size="sm"
+            onClick={isEditing ? handleSave : () => setIsEditing(true)}
+            disabled={updateBabyMutation.isPending}
+          >
+            {isEditing ? "Save" : <Edit className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
 
       <div className="p-4 space-y-6">
-        {/* Baby Profile */}
+        {/* Baby Information */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="bg-blue-100 p-3 rounded-full">
-                <BabyIcon className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle>{baby?.name || 'Loading...'}</CardTitle>
-                <p className="text-sm text-gray-600">
-                  {baby?.birthDate ? calculateAge(baby.birthDate) : 'Loading...'}
-                </p>
-              </div>
-            </div>
-            
-            <Dialog open={isEditingBaby} onOpenChange={setIsEditingBaby}>
-              <DialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Edit className="h-4 w-4" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-sm">
-                <DialogHeader>
-                  <DialogTitle>Edit Baby Profile</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="baby-name">Name</Label>
-                    <Input
-                      id="baby-name"
-                      value={babyName}
-                      onChange={(e) => setBabyName(e.target.value)}
-                      placeholder="Baby's name"
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="baby-birth-date">Birth Date</Label>
-                    <Input
-                      id="baby-birth-date"
-                      type="date"
-                      value={babyBirthDate}
-                      onChange={(e) => setBabyBirthDate(e.target.value)}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="baby-gender">Gender</Label>
-                    <select
-                      id="baby-gender"
-                      value={babyGender}
-                      onChange={(e) => setBabyGender(e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded-md"
-                    >
-                      <option value="">Select gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  
-                  <div className="flex gap-2">
-                    <Button 
-                      onClick={handleSaveBaby} 
-                      className="flex-1"
-                      disabled={updateBabyMutation.isPending}
-                    >
-                      {updateBabyMutation.isPending ? 'Saving...' : 'Save Changes'}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsEditingBaby(false)}
-                      className="flex-1"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2">
+              <BabyIcon className="h-5 w-5 text-pink-500" />
+              <span>Baby Information</span>
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-sm text-gray-600">
-              <p>Born: {baby?.birthDate ? format(new Date(baby.birthDate), 'MMM dd, yyyy') : 'Not set'}</p>
-              <p>Gender: {baby?.gender ? baby.gender.charAt(0).toUpperCase() + baby.gender.slice(1) : 'Not specified'}</p>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={babyName}
+                onChange={(e) => setBabyName(e.target.value)}
+                disabled={!isEditing}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="birthDate">Birth Date</Label>
+              <Input
+                id="birthDate"
+                type="date"
+                value={babyBirthDate}
+                onChange={(e) => setBabyBirthDate(e.target.value)}
+                disabled={!isEditing}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label>Gender</Label>
+              <Select 
+                value={babyGender} 
+                onValueChange={setBabyGender}
+                disabled={!isEditing}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardContent>
         </Card>
 
         {/* App Settings */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2">
               <Settings className="h-5 w-5 text-gray-600" />
-              <CardTitle>App Settings</CardTitle>
-            </div>
+              <span>App Settings</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Notifications</p>
-                <p className="text-sm text-gray-600">Receive app notifications</p>
+                <Label className="text-sm font-medium">Notifications</Label>
+                <p className="text-xs text-gray-600">Get reminders for feeding and diaper changes</p>
               </div>
-              <Switch
-                checked={notifications}
+              <Switch 
+                checked={notifications} 
                 onCheckedChange={setNotifications}
               />
             </div>
-            
+            <Separator />
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">Feed Reminders</p>
-                <p className="text-sm text-gray-600">Get reminded about feeding times</p>
+                <Label className="text-sm font-medium">Share Data</Label>
+                <p className="text-xs text-gray-600">Allow caregivers to access data</p>
               </div>
-              <Switch
-                checked={feedReminders}
-                onCheckedChange={setFeedReminders}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Sleep Tracking</p>
-                <p className="text-sm text-gray-600">Automatically track sleep patterns</p>
-              </div>
-              <Switch
-                checked={sleepTracking}
-                onCheckedChange={setSleepTracking}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">Data Sync</p>
-                <p className="text-sm text-gray-600">Sync data across devices</p>
-              </div>
-              <Switch
-                checked={dataSync}
-                onCheckedChange={setDataSync}
+              <Switch 
+                checked={shareData} 
+                onCheckedChange={setShareData}
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* Notifications Settings */}
+        {/* Data & Privacy */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Bell className="h-5 w-5 text-gray-600" />
-              <CardTitle>Notification Preferences</CardTitle>
-            </div>
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center space-x-2">
+              <Share2 className="h-5 w-5 text-blue-500" />
+              <span>Data & Privacy</span>
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="text-sm text-gray-600">
-              <p>• Feed reminders every 3 hours</p>
-              <p>• Health alerts for unusual patterns</p>
-              <p>• Growth milestone notifications</p>
-              <p>• Vaccination reminders</p>
-            </div>
-            <Button variant="outline" className="w-full text-sm">
-              Customize Notification Times
+            <Button variant="outline" className="w-full justify-start">
+              Export Data
+            </Button>
+            <Button variant="outline" className="w-full justify-start">
+              Manage Caregivers
+            </Button>
+            <Button variant="outline" className="w-full justify-start text-red-600 hover:text-red-700">
+              Delete Account
             </Button>
           </CardContent>
         </Card>
 
-        {/* Data Management */}
+        {/* App Info */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Share2 className="h-5 w-5 text-gray-600" />
-              <CardTitle>Data Management</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={exportAllData}
-            >
-              Export All Data
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => navigate("/export")}
-            >
-              Custom Export
-            </Button>
-            <Button 
-              variant="destructive" 
-              className="w-full"
-              onClick={clearAllData}
-            >
-              Clear All Data
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* App Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>About</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm text-gray-600">
-            <p>Baby Wellness Tracker v1.0.0</p>
-            <p>A comprehensive app for tracking your baby's health and development.</p>
-            <div className="pt-2 space-y-1">
-              <Button variant="ghost" className="h-auto p-0 text-sm text-blue-600">
-                Privacy Policy
-              </Button>
-              <br />
-              <Button variant="ghost" className="h-auto p-0 text-sm text-blue-600">
-                Terms of Service
-              </Button>
-              <br />
-              <Button variant="ghost" className="h-auto p-0 text-sm text-blue-600">
-                Contact Support
-              </Button>
+          <CardContent className="pt-6">
+            <div className="text-center space-y-2">
+              <h3 className="font-medium text-gray-900">Baby Wellness Tracker</h3>
+              <p className="text-sm text-gray-600">Version 1.0.0</p>
+              <div className="flex justify-center space-x-2">
+                <Badge variant="secondary">Privacy First</Badge>
+                <Badge variant="secondary">Family-Friendly</Badge>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      <BottomNavigation />
     </div>
   );
 }
