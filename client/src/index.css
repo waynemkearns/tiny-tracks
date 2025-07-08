@@ -1,0 +1,390 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222.2, 84%, 4.9%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222.2, 84%, 4.9%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222.2, 84%, 4.9%);
+  --border: hsl(214.3, 31.8%, 91.4%);
+  --input: hsl(214.3, 31.8%, 91.4%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --destructive: hsl(0, 84.2%, 60.2%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(207, 90%, 54%);
+  --radius: 0.75rem;
+
+  /* Custom app colors matching design reference */
+  --app-blue: hsl(207, 90%, 54%);
+  --app-green: hsl(84, 69%, 47%);
+  --app-yellow: hsl(39, 100%, 57%);
+  --app-orange: hsl(28, 100%, 57%);
+  --app-purple: hsl(270, 60%, 60%);
+  --app-red: hsl(348, 83%, 47%);
+  --app-surface: hsl(0, 0%, 100%);
+  --app-background: hsl(0, 0%, 98%);
+}
+
+.dark {
+  --background: hsl(222.2, 84%, 4.9%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217.2, 32.6%, 17.5%);
+  --muted-foreground: hsl(215, 20.2%, 65.1%);
+  --popover: hsl(222.2, 84%, 4.9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222.2, 84%, 4.9%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217.2, 32.6%, 17.5%);
+  --input: hsl(217.2, 32.6%, 17.5%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(222.2, 84%, 4.9%);
+  --secondary: hsl(217.2, 32.6%, 17.5%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217.2, 32.6%, 17.5%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 62.8%, 30.6%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(207, 90%, 54%);
+
+  /* Custom app colors for dark mode */
+  --app-blue: hsl(207, 90%, 54%);
+  --app-green: hsl(84, 69%, 47%);
+  --app-yellow: hsl(39, 100%, 57%);
+  --app-orange: hsl(28, 100%, 57%);
+  --app-purple: hsl(270, 60%, 60%);
+  --app-red: hsl(348, 83%, 47%);
+  --app-surface: hsl(222.2, 84%, 4.9%);
+  --app-background: hsl(220, 13%, 6%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  html {
+    font-size: 16px;
+  }
+}
+
+@layer components {
+  /* Custom utility classes for the baby app */
+  .card-shadow {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .floating-fab {
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+  }
+
+  /* Feed-specific colors */
+  .feed-card {
+    @apply bg-blue-50 border-blue-200;
+  }
+
+  .feed-icon {
+    @apply text-blue-600 bg-blue-100;
+  }
+
+  .feed-button {
+    @apply bg-blue-500 hover:bg-blue-600 text-white;
+  }
+
+  /* Nappy-specific colors */
+  .nappy-card {
+    @apply bg-yellow-50 border-yellow-200;
+  }
+
+  .nappy-icon {
+    @apply text-yellow-600 bg-yellow-100;
+  }
+
+  .nappy-button {
+    @apply bg-yellow-500 hover:bg-yellow-600 text-white;
+  }
+
+  /* Sleep-specific colors */
+  .sleep-card {
+    @apply bg-purple-50 border-purple-200;
+  }
+
+  .sleep-icon {
+    @apply text-purple-600 bg-purple-100;
+  }
+
+  .sleep-button {
+    @apply bg-purple-500 hover:bg-purple-600 text-white;
+  }
+
+  /* Health-specific colors */
+  .health-card {
+    @apply bg-orange-50 border-orange-200;
+  }
+
+  .health-icon {
+    @apply text-orange-600 bg-orange-100;
+  }
+
+  .health-button {
+    @apply bg-orange-500 hover:bg-orange-600 text-white;
+  }
+
+  /* Mood/General wellness colors */
+  .mood-card {
+    @apply bg-green-50 border-green-200;
+  }
+
+  .mood-icon {
+    @apply text-green-600 bg-green-100;
+  }
+
+  .mood-button {
+    @apply bg-green-500 hover:bg-green-600 text-white;
+  }
+
+  /* Quick entry grid responsive layout */
+  .quick-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  @media (min-width: 480px) {
+    .quick-entry-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* Mobile app container styles */
+  .mobile-app-container {
+    @apply max-w-md mx-auto bg-white min-h-screen relative;
+  }
+
+  /* Bottom navigation safe area */
+  .content-with-bottom-nav {
+    @apply pb-20;
+  }
+
+  /* Icon container styles */
+  .icon-container {
+    @apply p-2 rounded-full flex items-center justify-center;
+  }
+
+  /* Stats card styles */
+  .stats-card {
+    @apply p-3 rounded-xl shadow-sm;
+  }
+
+  /* Activity item styles */
+  .activity-item {
+    @apply flex items-center space-x-3 p-3 bg-gray-50 rounded-lg;
+  }
+
+  /* Chart bar styles */
+  .chart-bar {
+    @apply rounded-t transition-all duration-200;
+  }
+
+  /* Modal backdrop */
+  .modal-backdrop {
+    @apply fixed inset-0 bg-black bg-opacity-50 z-50;
+  }
+
+  /* Modal content */
+  .modal-content {
+    @apply fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-w-md mx-auto;
+  }
+
+  /* Alert styles */
+  .health-alert {
+    @apply fixed top-16 left-4 right-4 bg-orange-100 border-l-4 border-orange-500 p-4 rounded-lg shadow-lg z-40 max-w-md mx-auto;
+  }
+
+  /* Temperature warning styles */
+  .temp-warning {
+    @apply bg-red-50 border-red-200 text-red-800;
+  }
+
+  .temp-normal {
+    @apply bg-green-50 border-green-200 text-green-800;
+  }
+
+  /* Growth chart styles */
+  .growth-percentile {
+    @apply relative overflow-hidden;
+  }
+
+  /* Vaccination reminder styles */
+  .vaccination-due {
+    @apply bg-yellow-100 border-yellow-300 text-yellow-800;
+  }
+
+  .vaccination-overdue {
+    @apply bg-red-100 border-red-300 text-red-800;
+  }
+
+  /* Export styles */
+  .export-summary {
+    @apply grid grid-cols-2 gap-4 text-sm;
+  }
+
+  /* Form styles */
+  .form-grid {
+    @apply grid grid-cols-1 gap-4;
+  }
+
+  @media (min-width: 640px) {
+    .form-grid {
+      @apply grid-cols-2;
+    }
+  }
+
+  /* Loading skeleton styles */
+  .skeleton {
+    @apply animate-pulse bg-gray-200 rounded;
+  }
+
+  /* Empty state styles */
+  .empty-state {
+    @apply text-center py-8 text-gray-500;
+  }
+
+  /* Success message styles */
+  .success-message {
+    @apply bg-green-50 border-green-200 text-green-800 p-3 rounded-lg;
+  }
+
+  /* Error message styles */
+  .error-message {
+    @apply bg-red-50 border-red-200 text-red-800 p-3 rounded-lg;
+  }
+}
+
+@layer utilities {
+  /* Custom utilities for spacing and sizing */
+  .h-screen-safe {
+    min-height: calc(100vh - env(safe-area-inset-bottom));
+  }
+
+  .pb-safe {
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  }
+
+  /* Touch target sizing for mobile */
+  .touch-target {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Text sizing for mobile readability */
+  .text-mobile {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  /* Focus styles for accessibility */
+  .focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2;
+  }
+
+  /* Scroll area styles */
+  .scroll-area {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground)) transparent;
+  }
+
+  .scroll-area::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scroll-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scroll-area::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground));
+    border-radius: 3px;
+  }
+
+  /* Animation utilities */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.4s ease-out;
+  }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Print styles for export functionality */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  body {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
