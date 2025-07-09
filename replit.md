@@ -115,6 +115,7 @@ RESTful API endpoints organized by resource:
 ```
 Changelog:
 - July 08, 2025. Initial setup
+- July 09, 2025. Successfully deployed MVP with core features
 ```
 
 ## User Preferences
