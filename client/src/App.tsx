@@ -8,6 +8,7 @@ import Charts from "@/pages/charts";
 import Growth from "@/pages/growth";
 import Export from "@/pages/export";
 import Profile from "@/pages/profile";
+import Compare from "@/pages/compare";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/charts" component={Charts} />
       <Route path="/growth" component={Growth} />
+      <Route path="/compare" component={Compare} />
       <Route path="/export" component={Export} />
       <Route path="/profile" component={Profile} />
       <Route component={NotFound} />

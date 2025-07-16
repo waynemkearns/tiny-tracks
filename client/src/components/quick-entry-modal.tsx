@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { X } from "lucide-react";
@@ -12,10 +12,11 @@ interface QuickEntryModalProps {
   babyId: number;
   isOpen: boolean;
   onClose: () => void;
+  defaultTab?: 'feed' | 'nappy' | 'sleep' | 'health';
 }
 
-export default function QuickEntryModal({ babyId, isOpen, onClose }: QuickEntryModalProps) {
-  const [activeTab, setActiveTab] = useState<'feed' | 'nappy' | 'sleep' | 'health'>('feed');
+export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 'feed' }: QuickEntryModalProps) {
+  const [activeTab, setActiveTab] = useState<'feed' | 'nappy' | 'sleep' | 'health'>(defaultTab);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -39,6 +40,13 @@ export default function QuickEntryModal({ babyId, isOpen, onClose }: QuickEntryM
   const [healthType, setHealthType] = useState<'temperature' | 'mood' | 'rash' | 'other'>('temperature');
   const [healthValue, setHealthValue] = useState('');
   const [healthTime, setHealthTime] = useState(format(new Date(), 'HH:mm'));
+
+  // Update active tab when defaultTab changes
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab, isOpen]);
 
   const createFeedMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -232,121 +240,158 @@ export default function QuickEntryModal({ babyId, isOpen, onClose }: QuickEntryM
         </div>
 
         <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
-          {/* Feed Entry */}
+          {/* Feed Entry - Simplified 2-tap flow */}
           {activeTab === 'feed' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Quick Method Selection */}
               <div>
-                <Label>Feed Type</Label>
-                <div className="flex space-x-2 mt-1">
+                <Label className="text-base font-medium">Feed Method</Label>
+                <div className="grid grid-cols-2 gap-3 mt-3">
                   <Button
                     variant={feedType === 'bottle' ? 'default' : 'outline'}
-                    size="sm"
+                    size="lg"
                     onClick={() => setFeedType('bottle')}
+                    className="h-16 flex flex-col items-center space-y-1"
                   >
-                    Bottle
+                    <span className="text-xl">🍼</span>
+                    <span>Bottle</span>
                   </Button>
                   <Button
                     variant={feedType.startsWith('breast') ? 'default' : 'outline'}
-                    size="sm"
+                    size="lg"
                     onClick={() => setFeedType('breast_both')}
+                    className="h-16 flex flex-col items-center space-y-1"
                   >
-                    Breast
+                    <span className="text-xl">🤱</span>
+                    <span>Breast</span>
                   </Button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                {feedType === 'bottle' ? (
-                  <div>
-                    <Label htmlFor="amount">Amount (ml)</Label>
+              {/* Preset Values for Quick Selection */}
+              {feedType === 'bottle' ? (
+                <div>
+                  <Label className="text-base font-medium">Amount (ml)</Label>
+                  <div className="grid grid-cols-4 gap-2 mt-3">
+                    {[60, 90, 120, 150].map((amount) => (
+                      <Button
+                        key={amount}
+                        variant={feedAmount === amount.toString() ? 'default' : 'outline'}
+                        size="lg"
+                        onClick={() => setFeedAmount(amount.toString())}
+                        className="h-12"
+                      >
+                        {amount}ml
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="mt-2">
                     <Input
-                      id="amount"
-                      type="number"
-                      placeholder="120"
+                      placeholder="Custom amount"
                       value={feedAmount}
                       onChange={(e) => setFeedAmount(e.target.value)}
+                      type="number"
+                      className="text-center"
                     />
                   </div>
-                ) : (
-                  <div>
-                    <Label htmlFor="duration">Duration (min)</Label>
+                </div>
+              ) : (
+                <div>
+                  <Label className="text-base font-medium">Duration (minutes)</Label>
+                  <div className="grid grid-cols-4 gap-2 mt-3">
+                    {[10, 15, 20, 25].map((duration) => (
+                      <Button
+                        key={duration}
+                        variant={feedDuration === duration.toString() ? 'default' : 'outline'}
+                        size="lg"
+                        onClick={() => setFeedDuration(duration.toString())}
+                        className="h-12"
+                      >
+                        {duration}min
+                      </Button>
+                    ))}
+                  </div>
+                  <div className="mt-2">
                     <Input
-                      id="duration"
-                      type="number"
-                      placeholder="15"
+                      placeholder="Custom duration"
                       value={feedDuration}
                       onChange={(e) => setFeedDuration(e.target.value)}
+                      type="number"
+                      className="text-center"
                     />
                   </div>
-                )}
-
-                <div>
-                  <Label htmlFor="feed-time">Time</Label>
-                  <Input
-                    id="feed-time"
-                    type="time"
-                    value={feedTime}
-                    onChange={(e) => setFeedTime(e.target.value)}
-                  />
                 </div>
-              </div>
+              )}
 
               <Button 
                 onClick={handleSaveFeed} 
-                className="w-full bg-blue-500 hover:bg-blue-600"
+                className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-lg font-medium"
                 disabled={createFeedMutation.isPending}
               >
-                {createFeedMutation.isPending ? 'Saving...' : 'Save Feed'}
+                {createFeedMutation.isPending ? 'Saving...' : 'Log Feed Now'}
               </Button>
             </div>
           )}
 
-          {/* Nappy Entry */}
+          {/* Nappy Entry - One-tap icon system */}
           {activeTab === 'nappy' && (
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <Label>Nappy Type</Label>
-                <div className="flex space-x-2 mt-1">
+                <Label className="text-base font-medium">Quick Change Log</Label>
+                <p className="text-sm text-gray-600 mt-1">Tap the type of change</p>
+                <div className="grid grid-cols-3 gap-3 mt-4">
                   <Button
                     variant={nappyType === 'wet' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setNappyType('wet')}
+                    size="lg"
+                    onClick={() => {
+                      setNappyType('wet');
+                      // Auto-save after selection for ultimate simplicity
+                      setTimeout(() => handleSaveNappy(), 100);
+                    }}
+                    className="h-20 flex flex-col items-center space-y-2 touch-manipulation"
                   >
-                    Wet
+                    <span className="text-2xl">💧</span>
+                    <span className="font-medium">Wet</span>
                   </Button>
                   <Button
                     variant={nappyType === 'soiled' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setNappyType('soiled')}
+                    size="lg"
+                    onClick={() => {
+                      setNappyType('soiled');
+                      setTimeout(() => handleSaveNappy(), 100);
+                    }}
+                    className="h-20 flex flex-col items-center space-y-2 touch-manipulation"
                   >
-                    Soiled
+                    <span className="text-2xl">💩</span>
+                    <span className="font-medium">Soiled</span>
                   </Button>
                   <Button
                     variant={nappyType === 'both' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setNappyType('both')}
+                    size="lg"
+                    onClick={() => {
+                      setNappyType('both');
+                      setTimeout(() => handleSaveNappy(), 100);
+                    }}
+                    className="h-20 flex flex-col items-center space-y-2 touch-manipulation"
                   >
-                    Both
+                    <span className="text-2xl">💧💩</span>
+                    <span className="font-medium">Both</span>
                   </Button>
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="nappy-time">Time</Label>
-                <Input
-                  id="nappy-time"
-                  type="time"
-                  value={nappyTime}
-                  onChange={(e) => setNappyTime(e.target.value)}
-                />
+              <div className="text-center text-sm text-gray-500">
+                Time will be logged automatically as "now"
               </div>
 
+              {/* Manual save option if needed */}
               <Button 
                 onClick={handleSaveNappy} 
-                className="w-full bg-yellow-500 hover:bg-yellow-600"
+                variant="outline"
+                className="w-full"
                 disabled={createNappyMutation.isPending}
               >
-                {createNappyMutation.isPending ? 'Saving...' : 'Save Nappy'}
+                {createNappyMutation.isPending ? 'Saving...' : 'Manual Save'}
               </Button>
             </div>
           )}

@@ -122,4 +122,8 @@ Changelog:
 
 ```
 Preferred communication style: Simple, everyday language.
+Design philosophy: Simplicity-first UX at all times (not just night mode)
+Core features: Feed and Change tracking must be always accessible with minimal taps
+Product name: TinyTracks
+Comparison features: Free tier (WHO standards), Premium tier (peer comparisons)
 ```
