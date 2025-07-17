@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import type { Baby } from "@shared/schema";
+import BottomNavigation from "@/components/bottom-navigation";
+import { useLocation } from "wouter";
 
 export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
@@ -24,6 +26,7 @@ export default function Profile() {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, navigate] = useLocation();
   const babyId = 1; // Demo baby ID
 
   const { data: baby, isLoading } = useQuery<Baby>({
@@ -91,7 +94,7 @@ export default function Profile() {
       <div className="bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="p-2">
+            <Button variant="ghost" size="sm" className="p-2" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <h1 className="text-lg font-semibold text-gray-900">Profile</h1>
@@ -226,6 +229,8 @@ export default function Profile() {
           </CardContent>
         </Card>
       </div>
+
+      <BottomNavigation />
     </div>
   );
 }

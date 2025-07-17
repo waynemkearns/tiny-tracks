@@ -17,6 +17,7 @@ export interface IStorage {
   // Baby methods
   getBaby(id: number): Promise<Baby | undefined>;
   createBaby(baby: InsertBaby): Promise<Baby>;
+  updateBaby(id: number, baby: Partial<InsertBaby>): Promise<Baby | undefined>;
   getBabies(): Promise<Baby[]>;
 
   // Feed methods
@@ -105,6 +106,14 @@ export class DatabaseStorage implements IStorage {
   async createBaby(baby: InsertBaby): Promise<Baby> {
     const [newBaby] = await db.insert(babies).values(baby).returning();
     return newBaby;
+  }
+
+  async updateBaby(id: number, baby: Partial<InsertBaby>): Promise<Baby | undefined> {
+    const [updatedBaby] = await db.update(babies)
+      .set(baby)
+      .where(eq(babies.id, id))
+      .returning();
+    return updatedBaby || undefined;
   }
 
   async getBabies(): Promise<Baby[]> {

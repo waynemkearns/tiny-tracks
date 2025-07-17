@@ -7,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import BottomNavigation from "@/components/bottom-navigation";
+import { useLocation } from "wouter";
 
 export default function Compare() {
   const [isPremium, setIsPremium] = useState(false);
   const [peerDataConsent, setPeerDataConsent] = useState(false);
+  const [, navigate] = useLocation();
   const babyId = 1;
 
   const { data: baby } = useQuery({
@@ -49,7 +52,7 @@ export default function Compare() {
       {/* Header */}
       <header className="bg-primary text-primary-foreground p-4 flex items-center justify-between sticky top-0 z-10">
         <div className="flex items-center space-x-3">
-          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20">
+          <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/20" onClick={() => navigate("/")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-lg font-semibold">Data Comparison</h1>
@@ -283,6 +286,8 @@ export default function Compare() {
           </Card>
         )}
       </div>
+
+      <BottomNavigation />
     </div>
   );
 }

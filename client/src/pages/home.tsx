@@ -117,25 +117,25 @@ export default function Home() {
 
       <div className="p-4 space-y-6">
         {/* Primary Action Tiles - Always Visible at Top */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Feed Tile */}
+        <div className="space-y-4">
+          {/* Feed Tile - Full Width */}
           <button
             onClick={() => handleQuickAction('feed')}
-            className="bg-blue-500 hover:bg-blue-600 text-white rounded-2xl p-6 flex flex-col items-center justify-center space-y-3 shadow-lg active:scale-95 transition-all duration-200 min-h-[120px] touch-manipulation"
+            className="w-full bg-blue-500 hover:bg-blue-600 text-white rounded-2xl p-8 flex flex-col items-center justify-center space-y-4 shadow-lg active:scale-95 transition-all duration-200 min-h-[140px] touch-manipulation"
           >
-            <div className="text-3xl">🍼</div>
-            <span className="font-semibold text-lg">Feed</span>
-            <span className="text-sm opacity-90">Tap to log</span>
+            <div className="text-4xl">🍼</div>
+            <span className="font-bold text-xl">Feed Baby</span>
+            <span className="text-sm opacity-90">Two taps to log feeding</span>
           </button>
 
-          {/* Change Tile */}
+          {/* Change Tile - Full Width */}
           <button
             onClick={() => handleQuickAction('nappy')}
-            className="bg-green-500 hover:bg-green-600 text-white rounded-2xl p-6 flex flex-col items-center justify-center space-y-3 shadow-lg active:scale-95 transition-all duration-200 min-h-[120px] touch-manipulation"
+            className="w-full bg-green-500 hover:bg-green-600 text-white rounded-2xl p-8 flex flex-col items-center justify-center space-y-4 shadow-lg active:scale-95 transition-all duration-200 min-h-[140px] touch-manipulation"
           >
-            <div className="text-3xl">🧷</div>
-            <span className="font-semibold text-lg">Change</span>
-            <span className="text-sm opacity-90">Tap to log</span>
+            <div className="text-4xl">🧷</div>
+            <span className="font-bold text-xl">Change Diaper</span>
+            <span className="text-sm opacity-90">One tap to log change</span>
           </button>
         </div>
 

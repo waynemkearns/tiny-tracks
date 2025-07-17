@@ -44,6 +44,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/babies/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const babyData = insertBabySchema.partial().parse(req.body);
+      const baby = await storage.updateBaby(id, babyData);
+      if (!baby) {
+        return res.status(404).json({ message: "Baby not found" });
+      }
+      res.json(baby);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid baby data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update baby" });
+    }
+  });
+
   // Feed routes
   app.get("/api/babies/:babyId/feeds", async (req, res) => {
     try {
