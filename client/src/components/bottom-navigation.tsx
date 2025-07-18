@@ -1,5 +1,5 @@
 import { useLocation } from "wouter";
-import { Home, BarChart3, TrendingUp, Users, Share, User } from "lucide-react";
+import { Home, BarChart3, TrendingUp, Users, Share, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function BottomNavigation() {
@@ -8,8 +8,8 @@ export default function BottomNavigation() {
   const navItems = [
     { path: "/", icon: Home, label: "Home" },
     { path: "/charts", icon: BarChart3, label: "Charts" },
+    { path: "/notes", icon: FileText, label: "Notes" },
     { path: "/compare", icon: Users, label: "Compare" },
-    { path: "/growth", icon: TrendingUp, label: "Growth" },
     { path: "/profile", icon: User, label: "Profile" },
   ];
 

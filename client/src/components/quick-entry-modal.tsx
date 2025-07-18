@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { X } from "lucide-react";
+import { X, Plus, Camera, FileText, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -40,6 +43,13 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
   const [healthType, setHealthType] = useState<'temperature' | 'mood' | 'rash' | 'other'>('temperature');
   const [healthValue, setHealthValue] = useState('');
   const [healthTime, setHealthTime] = useState(format(new Date(), 'HH:mm'));
+
+  // Enhanced Notes & Attachments state
+  const [showNotesSection, setShowNotesSection] = useState(false);
+  const [additionalNotes, setAdditionalNotes] = useState<string[]>(['']);
+  const [attachedImages, setAttachedImages] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTag, setNewTag] = useState('');
 
   // Update active tab when defaultTab changes
   useEffect(() => {
@@ -116,6 +126,47 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
     setFeedDuration('');
     setHealthValue('');
     setSleepEndTime('');
+    setAdditionalNotes(['']);
+    setAttachedImages([]);
+    setTags([]);
+    setNewTag('');
+    setShowNotesSection(false);
+  };
+
+  const addNote = () => {
+    setAdditionalNotes([...additionalNotes, '']);
+  };
+
+  const updateNote = (index: number, value: string) => {
+    const updated = [...additionalNotes];
+    updated[index] = value;
+    setAdditionalNotes(updated);
+  };
+
+  const removeNote = (index: number) => {
+    if (additionalNotes.length > 1) {
+      setAdditionalNotes(additionalNotes.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setAttachedImages([...attachedImages, ...files]);
+  };
+
+  const removeImage = (index: number) => {
+    setAttachedImages(attachedImages.filter((_, i) => i !== index));
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag('');
+    }
+  };
+
+  const removeTag = (tag: string) => {
+    setTags(tags.filter(t => t !== tag));
   };
 
   const handleSaveFeed = () => {
@@ -123,10 +174,15 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
     const [hours, minutes] = feedTime.split(':');
     const timestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
 
+    const validNotes = additionalNotes.filter(note => note.trim() !== '');
+    
     const feedData = {
       type: feedType,
       timestamp: timestamp.toISOString(),
       ...(feedType === 'bottle' ? { amount: feedAmount } : { duration: parseInt(feedDuration) || 0 }),
+      ...(validNotes.length > 0 && { attachedNotes: validNotes }),
+      ...(tags.length > 0 && { tags }),
+      // Note: File upload will be implemented in Phase 2
     };
 
     createFeedMutation.mutate(feedData);
@@ -137,9 +193,13 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
     const [hours, minutes] = nappyTime.split(':');
     const timestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
 
+    const validNotes = additionalNotes.filter(note => note.trim() !== '');
+    
     const nappyData = {
       type: nappyType,
       timestamp: timestamp.toISOString(),
+      ...(validNotes.length > 0 && { attachedNotes: validNotes }),
+      ...(tags.length > 0 && { tags }),
     };
 
     createNappyMutation.mutate(nappyData);
@@ -323,6 +383,96 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
                 </div>
               )}
 
+              {/* Enhanced Notes & Attachments Section */}
+              <Collapsible open={showNotesSection} onOpenChange={setShowNotesSection}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full flex items-center justify-between">
+                    <span className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Add Notes & Photos</span>
+                    </span>
+                    <span className="text-xs text-gray-500">Optional</span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  {/* Multiple Notes */}
+                  <div>
+                    <Label className="text-sm font-medium">Additional Notes</Label>
+                    {additionalNotes.map((note, index) => (
+                      <div key={index} className="flex space-x-2 mt-2">
+                        <Textarea
+                          placeholder="Add detailed notes about this feed..."
+                          value={note}
+                          onChange={(e) => updateNote(index, e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                        {additionalNotes.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeNote(index)}
+                            className="flex-shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addNote}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Note
+                    </Button>
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <Label className="text-sm font-medium">Tags</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                          <span>{tag}</span>
+                          <button onClick={() => removeTag(tag)} className="ml-1">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        placeholder="Add tag (e.g., unusual, follow-up)"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                      />
+                      <Button size="sm" onClick={addTag}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Quick Tag Suggestions */}
+                  <div className="flex flex-wrap gap-2">
+                    {['unusual', 'doctor follow-up', 'milestone', 'pattern', 'concern'].map((tag) => (
+                      <Button
+                        key={tag}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => !tags.includes(tag) && setTags([...tags, tag])}
+                        disabled={tags.includes(tag)}
+                        className="text-xs"
+                      >
+                        {tag}
+                      </Button>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               <Button 
                 onClick={handleSaveFeed} 
                 className="w-full bg-blue-500 hover:bg-blue-600 h-12 text-lg font-medium"
@@ -383,6 +533,80 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
               <div className="text-center text-sm text-gray-500">
                 Time will be logged automatically as "now"
               </div>
+
+              {/* Enhanced Notes & Attachments for Nappy */}
+              <Collapsible open={showNotesSection} onOpenChange={setShowNotesSection}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full flex items-center justify-between">
+                    <span className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Add Notes & Photos</span>
+                    </span>
+                    <span className="text-xs text-gray-500">Optional</span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  {/* Multiple Notes */}
+                  <div>
+                    <Label className="text-sm font-medium">Additional Notes</Label>
+                    {additionalNotes.map((note, index) => (
+                      <div key={index} className="flex space-x-2 mt-2">
+                        <Textarea
+                          placeholder="Note color, consistency, or other details..."
+                          value={note}
+                          onChange={(e) => updateNote(index, e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                        {additionalNotes.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeNote(index)}
+                            className="flex-shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={addNote}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Note
+                    </Button>
+                  </div>
+
+                  {/* Tags */}
+                  <div>
+                    <Label className="text-sm font-medium">Tags</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {tags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                          <span>{tag}</span>
+                          <button onClick={() => removeTag(tag)} className="ml-1">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        placeholder="Add tag (e.g., unusual, rash)"
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && addTag()}
+                      />
+                      <Button size="sm" onClick={addTag}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               {/* Manual save option if needed */}
               <Button 

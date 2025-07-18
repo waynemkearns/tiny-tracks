@@ -19,6 +19,9 @@ export const feeds = pgTable("feeds", {
   duration: integer("duration"), // in minutes for breastfeeding
   timestamp: timestamp("timestamp").notNull(),
   notes: text("notes"),
+  attachedNotes: text("attached_notes").array(), // array of additional text notes
+  attachedMedia: text("attached_media").array(), // array of image file paths/URLs
+  tags: text("tags").array(), // optional tags like "unusual", "doctor follow-up"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -28,6 +31,9 @@ export const nappies = pgTable("nappies", {
   type: text("type").notNull(), // "wet", "soiled", "both"
   timestamp: timestamp("timestamp").notNull(),
   notes: text("notes"),
+  attachedNotes: text("attached_notes").array(), // array of additional text notes
+  attachedMedia: text("attached_media").array(), // array of image file paths/URLs
+  tags: text("tags").array(), // optional tags like "unusual", "doctor follow-up"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -40,6 +46,9 @@ export const sleepSessions = pgTable("sleep_sessions", {
   type: text("type").notNull(), // "nap", "night"
   location: text("location"), // "crib", "bed", "stroller", etc.
   notes: text("notes"),
+  attachedNotes: text("attached_notes").array(), // array of additional text notes
+  attachedMedia: text("attached_media").array(), // array of image file paths/URLs
+  tags: text("tags").array(), // optional tags like "unusual", "doctor follow-up"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -50,8 +59,11 @@ export const healthRecords = pgTable("health_records", {
   value: text("value"), // temperature value, mood description, etc.
   details: jsonb("details"), // flexible field for various health data
   timestamp: timestamp("timestamp").notNull(),
-  photos: text("photos").array(), // array of photo URLs
+  photos: text("photos").array(), // array of photo URLs (legacy field)
   notes: text("notes"),
+  attachedNotes: text("attached_notes").array(), // array of additional text notes
+  attachedMedia: text("attached_media").array(), // array of image file paths/URLs
+  tags: text("tags").array(), // optional tags like "unusual", "doctor follow-up"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -77,6 +89,20 @@ export const vaccinations = pgTable("vaccinations", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Standalone notes table for unstructured uploads and notes
+export const standaloneNotes = pgTable("standalone_notes", {
+  id: serial("id").primaryKey(),
+  babyId: integer("baby_id").notNull().references(() => babies.id),
+  title: text("title"), // optional title for the note
+  content: text("content"), // free text content
+  attachedMedia: text("attached_media").array(), // array of image file paths/URLs
+  tags: text("tags").array(), // optional tags like "urgent", "doctor follow-up"
+  timestamp: timestamp("timestamp").notNull(), // when the note was captured/uploaded
+  linkedToType: text("linked_to_type"), // "feed", "nappy", "sleep", "health", null for unlinked
+  linkedToId: integer("linked_to_id"), // ID of the linked record
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const babiesRelations = relations(babies, ({ many }) => ({
   feeds: many(feeds),
@@ -85,6 +111,7 @@ export const babiesRelations = relations(babies, ({ many }) => ({
   healthRecords: many(healthRecords),
   growthRecords: many(growthRecords),
   vaccinations: many(vaccinations),
+  standaloneNotes: many(standaloneNotes),
 }));
 
 export const feedsRelations = relations(feeds, ({ one }) => ({
@@ -129,6 +156,13 @@ export const vaccinationsRelations = relations(vaccinations, ({ one }) => ({
   }),
 }));
 
+export const standaloneNotesRelations = relations(standaloneNotes, ({ one }) => ({
+  baby: one(babies, {
+    fields: [standaloneNotes.babyId],
+    references: [babies.id],
+  }),
+}));
+
 // Insert schemas
 export const insertBabySchema = createInsertSchema(babies).omit({
   id: true,
@@ -165,6 +199,11 @@ export const insertVaccinationSchema = createInsertSchema(vaccinations).omit({
   createdAt: true,
 });
 
+export const insertStandaloneNoteSchema = createInsertSchema(standaloneNotes).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type Baby = typeof babies.$inferSelect;
 export type InsertBaby = z.infer<typeof insertBabySchema>;
@@ -186,6 +225,9 @@ export type InsertGrowthRecord = z.infer<typeof insertGrowthRecordSchema>;
 
 export type Vaccination = typeof vaccinations.$inferSelect;
 export type InsertVaccination = z.infer<typeof insertVaccinationSchema>;
+
+export type StandaloneNote = typeof standaloneNotes.$inferSelect;
+export type InsertStandaloneNote = z.infer<typeof insertStandaloneNoteSchema>;
 
 // Users table (keeping existing)
 export const users = pgTable("users", {

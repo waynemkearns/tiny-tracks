@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertBabySchema, insertFeedSchema, insertNappySchema, insertSleepSessionSchema,
-  insertHealthRecordSchema, insertGrowthRecordSchema, insertVaccinationSchema
+  insertHealthRecordSchema, insertGrowthRecordSchema, insertVaccinationSchema, insertStandaloneNoteSchema
 } from "@shared/schema";
 import { z } from "zod";
 
@@ -373,6 +373,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch weekly stats" });
+    }
+  });
+
+  // Standalone Notes routes
+  app.get("/api/babies/:babyId/notes", async (req, res) => {
+    try {
+      const babyId = parseInt(req.params.babyId);
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const notes = await storage.getStandaloneNotes(babyId, limit);
+      res.json(notes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch notes" });
+    }
+  });
+
+  app.post("/api/babies/:babyId/notes", async (req, res) => {
+    try {
+      const babyId = parseInt(req.params.babyId);
+      const noteData = insertStandaloneNoteSchema.parse({ ...req.body, babyId });
+      const note = await storage.createStandaloneNote(noteData);
+      res.status(201).json(note);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid note data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create note" });
+    }
+  });
+
+  app.put("/api/babies/:babyId/notes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const noteData = insertStandaloneNoteSchema.partial().parse(req.body);
+      const note = await storage.updateStandaloneNote(id, noteData);
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+      res.json(note);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid note data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update note" });
+    }
+  });
+
+  app.delete("/api/babies/:babyId/notes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteStandaloneNote(id);
+      if (!success) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete note" });
+    }
+  });
+
+  app.put("/api/notes/:id/link", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { recordType, recordId } = req.body;
+      
+      if (!recordType || !recordId) {
+        return res.status(400).json({ message: "recordType and recordId are required" });
+      }
+      
+      const note = await storage.linkNoteToRecord(id, recordType, recordId);
+      if (!note) {
+        return res.status(404).json({ message: "Note not found" });
+      }
+      res.json(note);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to link note" });
     }
   });
 

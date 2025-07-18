@@ -1,9 +1,9 @@
 import { 
-  babies, feeds, nappies, sleepSessions, healthRecords, growthRecords, vaccinations, users,
+  babies, feeds, nappies, sleepSessions, healthRecords, growthRecords, vaccinations, users, standaloneNotes,
   type Baby, type InsertBaby, type Feed, type InsertFeed, type Nappy, type InsertNappy,
   type SleepSession, type InsertSleepSession, type HealthRecord, type InsertHealthRecord,
   type GrowthRecord, type InsertGrowthRecord, type Vaccination, type InsertVaccination,
-  type User, type InsertUser
+  type User, type InsertUser, type StandaloneNote, type InsertStandaloneNote
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
@@ -60,6 +60,13 @@ export interface IStorage {
   getVaccinations(babyId: number): Promise<Vaccination[]>;
   updateVaccination(id: number, vaccination: Partial<InsertVaccination>): Promise<Vaccination | undefined>;
   deleteVaccination(id: number): Promise<boolean>;
+
+  // Standalone Notes methods
+  createStandaloneNote(note: InsertStandaloneNote): Promise<StandaloneNote>;
+  getStandaloneNotes(babyId: number, limit?: number): Promise<StandaloneNote[]>;
+  updateStandaloneNote(id: number, note: Partial<InsertStandaloneNote>): Promise<StandaloneNote | undefined>;
+  deleteStandaloneNote(id: number): Promise<boolean>;
+  linkNoteToRecord(noteId: number, recordType: string, recordId: number): Promise<StandaloneNote | undefined>;
 
   // Analytics methods
   getDailySummary(babyId: number, date: Date): Promise<{
@@ -333,6 +340,47 @@ export class DatabaseStorage implements IStorage {
   async deleteVaccination(id: number): Promise<boolean> {
     const result = await db.delete(vaccinations).where(eq(vaccinations.id, id));
     return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Standalone Notes methods
+  async createStandaloneNote(note: InsertStandaloneNote): Promise<StandaloneNote> {
+    const [created] = await db.insert(standaloneNotes).values(note).returning();
+    return created;
+  }
+
+  async getStandaloneNotes(babyId: number, limit: number = 50): Promise<StandaloneNote[]> {
+    return await db
+      .select()
+      .from(standaloneNotes)
+      .where(eq(standaloneNotes.babyId, babyId))
+      .orderBy(desc(standaloneNotes.timestamp))
+      .limit(limit);
+  }
+
+  async updateStandaloneNote(id: number, note: Partial<InsertStandaloneNote>): Promise<StandaloneNote | undefined> {
+    const [updated] = await db
+      .update(standaloneNotes)
+      .set(note)
+      .where(eq(standaloneNotes.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteStandaloneNote(id: number): Promise<boolean> {
+    try {
+      const result = await db.delete(standaloneNotes).where(eq(standaloneNotes.id, id));
+      return result.rowCount ? result.rowCount > 0 : false;
+    } catch (error) {
+      console.error('Error deleting standalone note:', error);
+      return false;
+    }
+  }
+
+  async linkNoteToRecord(noteId: number, recordType: string, recordId: number): Promise<StandaloneNote | undefined> {
+    return await this.updateStandaloneNote(noteId, {
+      linkedToType: recordType,
+      linkedToId: recordId
+    });
   }
 
   // Analytics methods

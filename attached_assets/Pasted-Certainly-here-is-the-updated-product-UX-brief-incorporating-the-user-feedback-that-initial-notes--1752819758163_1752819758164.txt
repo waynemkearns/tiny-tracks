@@ -1,0 +1,101 @@
+Certainly — here is the updated product/UX brief incorporating the user feedback that initial notes are typically made about Feed, Change, and similar core events, and users want a way to consolidate these into TinyTracks. This version includes design, functionality, data structure, and privacy considerations — ready for development scoping.
+
+⸻
+
+📥 Feature Brief: Support for Uploading and Attaching External Notes & Screenshots
+
+💡 User Feedback
+
+“I’m using Apple Notes and screenshots to jot down details about feeds, nappies, or health issues, especially when I don’t have time to log them properly in the moment. Can TinyTracks support uploading or attaching these later?”
+
+⸻
+
+🎯 Summary of User Need
+
+Parents often use quick external tools (like Apple Notes, photos, voice memos, WhatsApp) to capture:
+	•	Feeds (e.g. unusual feeding times or skipped feed)
+	•	Nappy changes (e.g. color/consistency photos or text notes)
+	•	Symptoms (e.g. rashes, vomiting, temperature logs)
+	•	Doctor prep (e.g. questions, timelines)
+
+They want an easy way to consolidate these informal records into TinyTracks later — ideally by attaching them to the appropriate event type (Feed, Change, etc.) or saving them as part of a health timeline.
+
+⸻
+
+✅ Feature Scope & Design Recommendations
+
+1. Universal Notes & Upload Attachments for Core Logs
+
+📌 Supported Log Types:
+	•	🍼 Feed
+	•	🧷 Change
+	•	💤 Sleep
+	•	📈 Growth
+	•	🚨 Health Notes
+
+✍️ Functionality:
+	•	On each log screen (e.g., Feed entry), add:
+	•	“Add Note”: free text entry with auto-timestamp
+	•	“Attach Image”: upload screenshot or photo (file picker or camera roll)
+	•	Users can:
+	•	Attach multiple notes/images to one entry
+	•	Review attached content in timeline or expanded entry view
+	•	Optionally tag notes (e.g., “doctor follow-up”, “unusual”, “pattern”)
+
+⸻
+
+2. Dedicated Notes & Uploads Section
+
+Alternative Entry:
+	•	A standalone section: 📝 “Captured Notes & Screenshots”
+	•	Users can:
+	•	Upload images or paste text not tied to a specific log
+	•	Later link or assign that note to a log type (e.g., retroactively add to “Feed” on June 5th at 3pm)
+
+⸻
+
+📂 Data Model & Storage
+	•	Extend existing log schema with:
+	•	attachedNotes[]: array of free-text entries
+	•	attachedMedia[]: array of image URIs + timestamps
+	•	Allow linking uploaded note to:
+	•	A specific event ID (e.g., Feed log)
+	•	A date/time range (e.g., 3am–5am, if precise time is unknown)
+
+⸻
+
+🔐 Privacy & Security
+	•	All images and notes:
+	•	Stored securely (encrypted at rest & in transit)
+	•	Remain local-first unless user enables cloud backup
+	•	Never shared unless included in an explicit export or summary
+	•	Offer a setting to auto-delete temporary uploads after export or after X days
+
+⸻
+
+🧠 Optional Future Enhancements
+	•	Voice-to-text notes (for hands-free journaling)
+	•	OCR (Optical Character Recognition) to extract text from screenshots (e.g., temperature logs)
+	•	Smart tagging (e.g., “this note matches recent diaper entry” suggestion)
+
+⸻
+
+✅ MVP Acceptance Criteria
+
+Feature	Requirement
+Text Note on Feed/Change	User can add free text to any Feed or Change log
+Image Attachment	User can attach a photo/screenshot to any log
+Standalone Note Upload	User can upload notes/images not tied to a log, and link them later
+Timeline Integration	Notes/images visible in timeline under correct date
+Export Support	Notes/images can be included in reports or doctor summaries
+Secure Storage	Images encrypted; only user-controlled sharing/exporting
+
+
+⸻
+
+This feature should be considered for inclusion in MVP+2 and aligns with user needs for convenience, consolidation, and trusted recordkeeping.
+
+Let us know if you’d like:
+	•	UI wireframes for inline attachment flows
+	•	A roadmap card for dev planning
+	•	Consent microcopy or onboarding text for this feature
