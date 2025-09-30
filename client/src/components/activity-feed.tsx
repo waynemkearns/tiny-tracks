@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Utensils, Baby, Moon, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Feed, Nappy, SleepSession } from "@shared/schema";
+import type { Feed, Nappy, SleepSession } from "@/types/api";
 
 interface ActivityFeedProps {
   babyId: number;
@@ -16,19 +16,22 @@ type ActivityItem = {
 };
 
 export default function ActivityFeed({ babyId }: ActivityFeedProps) {
-  const { data: feeds = [] } = useQuery({
+  const { data: feeds = [] } = useQuery<Feed[]>({
     queryKey: [`/api/babies/${babyId}/feeds`],
-    select: (data: Feed[]) => data.slice(0, 5),
+    select: (data) => data.slice(0, 5),
+    placeholderData: []
   });
 
-  const { data: nappies = [] } = useQuery({
+  const { data: nappies = [] } = useQuery<Nappy[]>({
     queryKey: [`/api/babies/${babyId}/nappies`],
-    select: (data: Nappy[]) => data.slice(0, 5),
+    select: (data) => data.slice(0, 5),
+    placeholderData: []
   });
 
-  const { data: sleepSessions = [] } = useQuery({
+  const { data: sleepSessions = [] } = useQuery<SleepSession[]>({
     queryKey: [`/api/babies/${babyId}/sleep`],
-    select: (data: SleepSession[]) => data.slice(0, 5),
+    select: (data) => data.slice(0, 5),
+    placeholderData: []
   });
 
   // Combine and sort all activities

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRequest } from "@/lib/queryClient";
+import { MaternalHealth } from "@/types/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface BloodPressureEntryModalProps {
@@ -22,12 +22,15 @@ export default function BloodPressureEntryModal({ pregnancyId, onClose }: BloodP
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  const addBPEntry = useMutation({
+  const addBPEntry = useMutation<MaternalHealth, Error, void>({
     mutationFn: async () => {
       setIsSubmitting(true);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/health`, {
+      const response = await fetch(`/api/pregnancies/${pregnancyId}/health`, {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           type: "blood_pressure",
           value: `${systolic}/${diastolic}`,
@@ -35,6 +38,12 @@ export default function BloodPressureEntryModal({ pregnancyId, onClose }: BloodP
           notes: notes || undefined
         })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to save blood pressure entry');
+      }
+      
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/pregnancies/${pregnancyId}/health?type=blood_pressure`] });

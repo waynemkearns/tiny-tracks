@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
 
@@ -30,20 +29,34 @@ export default function BirthTransition({ pregnancyId, onClose }: BirthTransitio
   const { toast } = useToast();
   const [, navigate] = useLocation();
   
-  const birthTransition = useMutation({
+  interface BirthResponse {
+    id: number;
+    name: string;
+  }
+  
+  const birthTransition = useMutation<BirthResponse, Error, void>({
     mutationFn: async () => {
       setIsLoading(true);
       
       const dateTimeStr = `${birthDate}T${birthTime}`;
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/birth`, {
+      const response = await fetch(`/api/pregnancies/${pregnancyId}/birth`, {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           name: babyName,
           birthDate: new Date(dateTimeStr).toISOString(),
           gender: gender || undefined
         })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to record birth');
+      }
+      
+      return await response.json();
     },
     onSuccess: (data) => {
       // Trigger confetti animation

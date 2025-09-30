@@ -7,24 +7,28 @@ jest.mock('@tanstack/react-query', () => {
   const originalModule = jest.requireActual('@tanstack/react-query');
   return {
     ...originalModule,
-    useQuery: jest.fn().mockImplementation(({ queryKey, placeholderData }) => {
+    useQuery: jest.fn().mockImplementation((options) => {
+      const queryKey = Array.isArray(options.queryKey) ? options.queryKey[0] : options.queryKey;
+      
       // Return mock data based on the query key
-      if (queryKey?.includes('contractions')) {
-        return { data: mockContractions };
-      } 
-      else if (queryKey?.includes('movements')) {
-        return { data: mockMovements };
+      if (typeof queryKey === 'string') {
+        if (queryKey.includes('contractions')) {
+          return { data: mockContractions };
+        } 
+        else if (queryKey.includes('movements')) {
+          return { data: mockMovements };
+        }
+        else if (queryKey.includes('feeds')) {
+          return { data: mockFeeds };
+        }
+        else if (queryKey.includes('pregnancy')) {
+          return { data: mockPregnancy };
+        }
+        else if (queryKey.includes('baby')) {
+          return { data: mockBaby };
+        }
       }
-      else if (queryKey?.includes('feeds')) {
-        return { data: mockFeeds };
-      }
-      else if (queryKey?.includes('pregnancy')) {
-        return { data: mockPregnancy };
-      }
-      else if (queryKey?.includes('baby')) {
-        return { data: mockBaby };
-      }
-      return { data: placeholderData || null };
+      return { data: options.placeholderData || null };
     }),
   };
 });
@@ -150,13 +154,14 @@ describe('UnifiedTimeline component', () => {
   });
   
   it('shows empty state when no events match filters', () => {
-    // Mock all data as empty
-    jest.mock('@tanstack/react-query', () => {
-      return {
-        useQuery: () => ({ data: [] }),
-        QueryClientProvider: ({ children }) => children,
-      };
-    });
+    // Override the mock for this test only
+    const useQueryMock = jest.requireMock('@tanstack/react-query').useQuery;
+    useQueryMock.mockImplementationOnce(() => ({ data: [] }))
+      .mockImplementationOnce(() => ({ data: [] }))
+      .mockImplementationOnce(() => ({ data: [] }))
+      .mockImplementationOnce(() => ({ data: [] }))
+      .mockImplementationOnce(() => ({ data: [] }))
+      .mockImplementationOnce(() => ({ data: [] }));
     
     render(
       <QueryClientProvider client={queryClient}>

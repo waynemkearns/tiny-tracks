@@ -4,7 +4,6 @@ import { X, Play, Pause, StopCircle, Clock, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
-import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Contraction } from "@/types/api";
 
@@ -23,22 +22,31 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   const { toast } = useToast();
 
   // Start a new contraction
-  const startContraction = useMutation({
-    mutationFn: () => {
+  const startContraction = useMutation<Contraction, Error, void>({
+    mutationFn: async () => {
       const now = new Date();
       setStartTime(now);
       setElapsedTime(0);
       setIsTracking(true);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/contractions`, {
+      const response = await fetch(`/api/pregnancies/${pregnancyId}/contractions`, {
         method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           startTime: now.toISOString(),
           intensity
         })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to start contraction');
+      }
+      
+      return await response.json();
     },
-    onSuccess: (data: Contraction) => {
+    onSuccess: (data) => {
       toast({
         title: "Contraction Started",
         description: "Timer is now running",
@@ -50,27 +58,36 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   });
 
   // Stop the current contraction
-  const stopContraction = useMutation({
-    mutationFn: (contractionId: number) => {
+  const stopContraction = useMutation<Contraction, Error, number>({
+    mutationFn: async (contractionId: number) => {
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - (startTime?.getTime() || 0)) / 1000);
       
       setIsTracking(false);
       setStartTime(null);
       
-      return apiRequest(`/api/contractions/${contractionId}`, {
+      const response = await fetch(`/api/contractions/${contractionId}`, {
         method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           endTime: endTime.toISOString(),
           duration,
           intensity
         })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to stop contraction');
+      }
+      
+      return await response.json();
     },
-    onSuccess: (data: Contraction) => {
+    onSuccess: (data) => {
       toast({
         title: "Contraction Recorded",
-        description: `Duration: ${formatDuration(data.duration)}`,
+        description: `Duration: ${formatDuration(data.duration || 0)}`,
       });
       
       // Update the contraction in the UI
@@ -120,7 +137,10 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   useEffect(() => {
     const fetchContractions = async () => {
       try {
-        const response = await apiRequest(`/api/pregnancies/${pregnancyId}/contractions?limit=5`);
+        const response = await fetch(`/api/pregnancies/${pregnancyId}/contractions?limit=5`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch contractions');
+        }
         const data = await response.json() as Contraction[];
         setRecentContractions(data);
       } catch (error) {
