@@ -8,8 +8,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox, CheckedState } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { 
+  Baby as BabyType, 
+  Pregnancy, 
+  Contraction, 
+  FetalMovement, 
+  MaternalHealth, 
+  Feed, 
+  Nappy, 
+  SleepSession, 
+  HealthRecord, 
+  GrowthRecord 
+} from "@/types/api";
 
 interface UnifiedTimelineProps {
   userId: number;
@@ -57,63 +69,71 @@ export default function UnifiedTimeline({
   const [expandedItem, setExpandedItem] = useState<number | null>(null);
   
   // Fetch baby data if ID provided
-  const { data: baby } = useQuery({
-    queryKey: babyId ? [`/api/babies/${babyId}`] : null,
+  const { data: baby } = useQuery<BabyType>({
+    queryKey: babyId ? [`/api/babies/${babyId}`] : [],
     enabled: !!babyId
   });
   
   // Fetch pregnancy data if ID provided
-  const { data: pregnancy } = useQuery({
-    queryKey: pregnancyId ? [`/api/pregnancies/${pregnancyId}`] : null,
+  const { data: pregnancy } = useQuery<Pregnancy>({
+    queryKey: pregnancyId ? [`/api/pregnancies/${pregnancyId}`] : [],
     enabled: !!pregnancyId
   });
   
   // Fetch pregnancy contractions
-  const { data: contractions } = useQuery({
-    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/contractions`] : null,
-    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.contraction
+  const { data: contractions } = useQuery<Contraction[]>({
+    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/contractions`] : [],
+    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.contraction,
+    placeholderData: []
   });
   
   // Fetch pregnancy movements
-  const { data: movements } = useQuery({
-    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/movements`] : null,
-    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.movement
+  const { data: movements } = useQuery<FetalMovement[]>({
+    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/movements`] : [],
+    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.movement,
+    placeholderData: []
   });
   
   // Fetch pregnancy health data
-  const { data: maternalHealth } = useQuery({
-    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/health`] : null,
-    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.maternal_health
+  const { data: maternalHealth } = useQuery<MaternalHealth[]>({
+    queryKey: pregnancyId && filterOptions.showPregnancy ? [`/api/pregnancies/${pregnancyId}/health`] : [],
+    enabled: !!pregnancyId && filterOptions.showPregnancy && filterOptions.eventTypes.maternal_health,
+    placeholderData: []
   });
   
   // Fetch baby feeds
-  const { data: feeds } = useQuery({
-    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/feeds`] : null,
-    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.feed
+  const { data: feeds } = useQuery<Feed[]>({
+    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/feeds`] : [],
+    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.feed,
+    placeholderData: []
   });
   
   // Fetch baby nappies
-  const { data: nappies } = useQuery({
-    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/nappies`] : null,
-    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.nappy
+  const { data: nappies } = useQuery<Nappy[]>({
+    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/nappies`] : [],
+    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.nappy,
+    placeholderData: []
   });
   
   // Fetch baby sleep
-  const { data: sleep } = useQuery({
-    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/sleep`] : null,
-    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.sleep
+  const { data: sleep } = useQuery<SleepSession[]>({
+    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/sleep`] : [],
+    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.sleep,
+    placeholderData: []
   });
   
   // Fetch baby health
-  const { data: health } = useQuery({
-    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/health`] : null,
-    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.health
+  const { data: health } = useQuery<HealthRecord[]>({
+    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/health`] : [],
+    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.health,
+    placeholderData: []
   });
   
   // Fetch baby growth
-  const { data: growth } = useQuery({
-    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/growth`] : null,
-    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.growth
+  const { data: growth } = useQuery<GrowthRecord[]>({
+    queryKey: babyId && filterOptions.showBaby ? [`/api/babies/${babyId}/growth`] : [],
+    enabled: !!babyId && filterOptions.showBaby && filterOptions.eventTypes.growth,
+    placeholderData: []
   });
   
   // Create combined timeline data
@@ -122,7 +142,7 @@ export default function UnifiedTimeline({
     
     // Add pregnancy contractions
     if (contractions?.length && filterOptions.eventTypes.contraction) {
-      contractions.forEach((contraction: any) => {
+      contractions.forEach((contraction: Contraction) => {
         allItems.push({
           id: `contraction_${contraction.id}`,
           timestamp: contraction.startTime,
@@ -139,7 +159,7 @@ export default function UnifiedTimeline({
     
     // Add pregnancy movements
     if (movements?.length && filterOptions.eventTypes.movement) {
-      movements.forEach((movement: any) => {
+      movements.forEach((movement: FetalMovement) => {
         allItems.push({
           id: `movement_${movement.id}`,
           timestamp: movement.timestamp,
@@ -156,7 +176,7 @@ export default function UnifiedTimeline({
     
     // Add maternal health data
     if (maternalHealth?.length && filterOptions.eventTypes.maternal_health) {
-      maternalHealth.forEach((item: any) => {
+      maternalHealth.forEach((item: MaternalHealth) => {
         let itemTitle = "Health Record";
         let itemDetails = item.value;
         
@@ -191,7 +211,7 @@ export default function UnifiedTimeline({
     
     // Add baby feeds
     if (feeds?.length && filterOptions.eventTypes.feed) {
-      feeds.forEach((feed: any) => {
+      feeds.forEach((feed: Feed) => {
         allItems.push({
           id: `feed_${feed.id}`,
           timestamp: feed.timestamp,
@@ -208,7 +228,7 @@ export default function UnifiedTimeline({
     
     // Add baby nappies
     if (nappies?.length && filterOptions.eventTypes.nappy) {
-      nappies.forEach((nappy: any) => {
+      nappies.forEach((nappy: Nappy) => {
         allItems.push({
           id: `nappy_${nappy.id}`,
           timestamp: nappy.timestamp,
@@ -224,7 +244,7 @@ export default function UnifiedTimeline({
     
     // Add baby sleep
     if (sleep?.length && filterOptions.eventTypes.sleep) {
-      sleep.forEach((session: any) => {
+      sleep.forEach((session: SleepSession) => {
         const duration = session.duration ? Math.round(session.duration) : 0;
         const hours = Math.floor(duration / 60);
         const minutes = duration % 60;
@@ -246,7 +266,7 @@ export default function UnifiedTimeline({
     
     // Add baby health
     if (health?.length && filterOptions.eventTypes.health) {
-      health.forEach((record: any) => {
+      health.forEach((record: HealthRecord) => {
         allItems.push({
           id: `health_${record.id}`,
           timestamp: record.timestamp,
@@ -263,7 +283,7 @@ export default function UnifiedTimeline({
     
     // Add baby growth
     if (growth?.length && filterOptions.eventTypes.growth) {
-      growth.forEach((record: any) => {
+      growth.forEach((record: GrowthRecord) => {
         const details = [];
         if (record.weight) details.push(`Weight: ${record.weight} kg`);
         if (record.height) details.push(`Height: ${record.height} cm`);
@@ -360,7 +380,7 @@ export default function UnifiedTimeline({
                     <Checkbox 
                       id="show-pregnancy"
                       checked={filterOptions.showPregnancy}
-                      onCheckedChange={() => toggleSource("pregnancy")}
+                      onCheckedChange={(checked: CheckedState) => toggleSource("pregnancy")}
                     />
                     <Label htmlFor="show-pregnancy" className="text-sm">Pregnancy Events</Label>
                   </div>
@@ -371,7 +391,7 @@ export default function UnifiedTimeline({
                     <Checkbox 
                       id="show-baby"
                       checked={filterOptions.showBaby}
-                      onCheckedChange={() => toggleSource("baby")}
+                      onCheckedChange={(checked: CheckedState) => toggleSource("baby")}
                     />
                     <Label htmlFor="show-baby" className="text-sm">Baby Events</Label>
                   </div>
@@ -388,7 +408,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-contractions"
                           checked={filterOptions.eventTypes.contraction}
-                          onCheckedChange={() => toggleEventType("contraction")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("contraction")}
                         />
                         <Label htmlFor="show-contractions" className="text-sm">Contractions</Label>
                       </div>
@@ -397,7 +417,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-movements"
                           checked={filterOptions.eventTypes.movement}
-                          onCheckedChange={() => toggleEventType("movement")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("movement")}
                         />
                         <Label htmlFor="show-movements" className="text-sm">Fetal Movements</Label>
                       </div>
@@ -406,7 +426,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-maternal-health"
                           checked={filterOptions.eventTypes.maternal_health}
-                          onCheckedChange={() => toggleEventType("maternal_health")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("maternal_health")}
                         />
                         <Label htmlFor="show-maternal-health" className="text-sm">Maternal Health</Label>
                       </div>
@@ -419,7 +439,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-feeds"
                           checked={filterOptions.eventTypes.feed}
-                          onCheckedChange={() => toggleEventType("feed")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("feed")}
                         />
                         <Label htmlFor="show-feeds" className="text-sm">Feeds</Label>
                       </div>
@@ -428,7 +448,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-nappies"
                           checked={filterOptions.eventTypes.nappy}
-                          onCheckedChange={() => toggleEventType("nappy")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("nappy")}
                         />
                         <Label htmlFor="show-nappies" className="text-sm">Nappies</Label>
                       </div>
@@ -437,7 +457,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-sleep"
                           checked={filterOptions.eventTypes.sleep}
-                          onCheckedChange={() => toggleEventType("sleep")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("sleep")}
                         />
                         <Label htmlFor="show-sleep" className="text-sm">Sleep</Label>
                       </div>
@@ -446,7 +466,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-health"
                           checked={filterOptions.eventTypes.health}
-                          onCheckedChange={() => toggleEventType("health")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("health")}
                         />
                         <Label htmlFor="show-health" className="text-sm">Health</Label>
                       </div>
@@ -455,7 +475,7 @@ export default function UnifiedTimeline({
                         <Checkbox 
                           id="show-growth"
                           checked={filterOptions.eventTypes.growth}
-                          onCheckedChange={() => toggleEventType("growth")}
+                          onCheckedChange={(checked: CheckedState) => toggleEventType("growth")}
                         />
                         <Label htmlFor="show-growth" className="text-sm">Growth</Label>
                       </div>
@@ -485,7 +505,7 @@ export default function UnifiedTimeline({
               </div>
               
               <div className="space-y-2 pl-3 border-l-2 border-gray-100">
-                {groupedItems[date].map((item: any) => (
+                {groupedItems[date].map((item: BaseTimelineItem) => (
                   <div key={item.id} className="relative">
                     {/* Timeline dot */}
                     <div className={`absolute -left-[19px] w-5 h-5 rounded-full flex items-center justify-center ${item.color.split(' ')[0]}`}>

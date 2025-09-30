@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { Contraction } from "@/types/api";
 
 interface ContractionTimerProps {
   pregnancyId: number;
@@ -17,7 +18,7 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   const [startTime, setStartTime] = useState<Date | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [intensity, setIntensity] = useState(5);
-  const [recentContractions, setRecentContractions] = useState<any[]>([]);
+  const [recentContractions, setRecentContractions] = useState<Contraction[]>([]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -37,7 +38,7 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
         })
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: Contraction) => {
       toast({
         title: "Contraction Started",
         description: "Timer is now running",
@@ -66,7 +67,7 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
         })
       });
     },
-    onSuccess: (data) => {
+    onSuccess: (data: Contraction) => {
       toast({
         title: "Contraction Recorded",
         description: `Duration: ${formatDuration(data.duration)}`,
@@ -119,7 +120,8 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   useEffect(() => {
     const fetchContractions = async () => {
       try {
-        const data = await apiRequest(`/api/pregnancies/${pregnancyId}/contractions?limit=5`);
+        const response = await apiRequest(`/api/pregnancies/${pregnancyId}/contractions?limit=5`);
+        const data = await response.json() as Contraction[];
         setRecentContractions(data);
       } catch (error) {
         console.error("Failed to fetch contractions", error);

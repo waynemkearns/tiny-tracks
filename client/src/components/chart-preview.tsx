@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { format, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { WeeklyStats } from "@/types/api";
 
 interface ChartPreviewProps {
   babyId: number;
@@ -10,7 +11,7 @@ export default function ChartPreview({ babyId }: ChartPreviewProps) {
   const today = new Date();
   const weekStart = subDays(today, 6);
 
-  const { data: weeklyStats } = useQuery({
+  const { data: weeklyStats } = useQuery<WeeklyStats>({
     queryKey: [`/api/babies/${babyId}/stats/weekly/${format(weekStart, 'yyyy-MM-dd')}`],
     placeholderData: {
       daily: Array(7).fill(0).map((_, i) => ({

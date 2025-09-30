@@ -74,11 +74,6 @@ if (typeof window !== 'undefined') {
     buster: '1.0', // Update this when cache format changes
     hydrateOptions: {
       // When true, stale queries will refetch in the background on app startup
-      defaultOptions: {
-        queries: {
-          refetchOnMount: true,
-        },
-      },
     },
   });
 }
