@@ -12,6 +12,14 @@ export default function ChartPreview({ babyId }: ChartPreviewProps) {
 
   const { data: weeklyStats } = useQuery({
     queryKey: [`/api/babies/${babyId}/stats/weekly/${format(weekStart, 'yyyy-MM-dd')}`],
+    placeholderData: {
+      daily: Array(7).fill(0).map((_, i) => ({
+        date: format(subDays(today, 6 - i), 'yyyy-MM-dd'),
+        feedCount: 0,
+        sleepDuration: 0,
+        nappyCount: 0
+      }))
+    }
   });
 
   const maxFeeds = Math.max(...(weeklyStats?.daily.map(d => d.feedCount) || [1]));
