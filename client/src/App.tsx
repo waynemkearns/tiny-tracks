@@ -1,10 +1,14 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { analytics } from "./lib/analytics";
+import { Sentry } from "./lib/analytics";
+import RegisterSW from "./components/pwa/register-sw";
+import FeedbackForm from "./components/feedback-form";
 
 // Lazy-loaded components
 const Home = lazy(() => import("@/pages/home"));
@@ -27,6 +31,13 @@ const LoadingFallback = () => (
 );
 
 function Router() {
+  const [location] = useLocation();
+  
+  // Track page views
+  useEffect(() => {
+    analytics.pageView(location);
+  }, [location]);
+  
   return (
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
@@ -51,12 +62,27 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <Sentry.ErrorBoundary fallback={
+      <div className="p-4 text-center">
+        <h2 className="text-lg font-bold mb-2">Something went wrong</h2>
+        <p>We've been notified and will fix this issue as soon as possible.</p>
+        <button 
+          className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-md"
+          onClick={() => window.location.reload()}
+        >
+          Reload Page
+        </button>
+      </div>
+    }>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+          <RegisterSW />
+          <FeedbackForm />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </Sentry.ErrorBoundary>
   );
 }
 
