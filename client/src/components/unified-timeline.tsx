@@ -44,6 +44,8 @@ interface BaseTimelineItem {
   details?: string;
 }
 
+type ExpandedItemId = string | number | null;
+
 export default function UnifiedTimeline({ 
   userId, 
   babyId,
@@ -66,7 +68,7 @@ export default function UnifiedTimeline({
       growth: true
     }
   });
-  const [expandedItem, setExpandedItem] = useState<number | null>(null);
+  const [expandedItem, setExpandedItem] = useState<ExpandedItemId>(null);
   
   // Fetch baby data if ID provided
   const { data: baby } = useQuery<BabyType>({

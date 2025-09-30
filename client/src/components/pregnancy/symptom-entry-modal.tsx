@@ -43,16 +43,18 @@ export default function SymptomEntryModal({ pregnancyId, onClose }: SymptomEntry
     mutationFn: async () => {
       setIsSubmitting(true);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/health`, {
-        method: "POST",
-        body: JSON.stringify({
+      const res = await apiRequest(
+        "POST",
+        `/api/pregnancies/${pregnancyId}/health`,
+        {
           type: "symptom",
           value: symptomType,
           timestamp: new Date().toISOString(),
           details: JSON.stringify({ severity }),
           notes: notes || undefined
-        })
-      });
+        }
+      );
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/pregnancies/${pregnancyId}/health?type=symptom`] });

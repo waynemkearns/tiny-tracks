@@ -52,15 +52,17 @@ export default function KickCounter({ pregnancyId, onClose }: KickCounterProps) 
       
       setIsSessionActive(false);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/movements`, {
-        method: "POST",
-        body: JSON.stringify({
+      const res = await apiRequest(
+        "POST",
+        `/api/pregnancies/${pregnancyId}/movements`,
+        {
           timestamp: sessionStartTime?.toISOString(),
           duration: durationSeconds,
           responseToStimuli: responseToStimuli || undefined,
           notes: `${kickCount} movements recorded in ${formatDuration(durationSeconds)}`
-        })
-      });
+        }
+      );
+      return await res.json();
     },
     onSuccess: (data) => {
       toast({
@@ -116,7 +118,8 @@ export default function KickCounter({ pregnancyId, onClose }: KickCounterProps) 
   useEffect(() => {
     const fetchMovements = async () => {
       try {
-        const data = await apiRequest(`/api/pregnancies/${pregnancyId}/movements?limit=5`);
+        const res = await apiRequest("GET", `/api/pregnancies/${pregnancyId}/movements?limit=5`);
+        const data = await res.json();
         setRecentMovements(data);
       } catch (error) {
         console.error("Failed to fetch movements", error);

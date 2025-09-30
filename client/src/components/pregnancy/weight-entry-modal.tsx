@@ -25,15 +25,17 @@ export default function WeightEntryModal({ pregnancyId, onClose }: WeightEntryMo
     mutationFn: async () => {
       setIsSubmitting(true);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/health`, {
-        method: "POST",
-        body: JSON.stringify({
+      const res = await apiRequest(
+        "POST",
+        `/api/pregnancies/${pregnancyId}/health`,
+        {
           type: "weight",
           value: weight,
           timestamp: new Date().toISOString(),
           notes: notes || undefined
-        })
-      });
+        }
+      );
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/pregnancies/${pregnancyId}/health?type=weight`] });

@@ -35,15 +35,17 @@ export default function MoodEntryModal({ pregnancyId, onClose }: MoodEntryModalP
     mutationFn: async () => {
       setIsSubmitting(true);
       
-      return apiRequest(`/api/pregnancies/${pregnancyId}/health`, {
-        method: "POST",
-        body: JSON.stringify({
+      const res = await apiRequest(
+        "POST",
+        `/api/pregnancies/${pregnancyId}/health`,
+        {
           type: "mood",
           value: selectedMood,
           timestamp: new Date().toISOString(),
           notes: notes || undefined
-        })
-      });
+        }
+      );
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/pregnancies/${pregnancyId}/health?type=mood`] });

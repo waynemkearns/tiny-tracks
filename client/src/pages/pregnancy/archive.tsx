@@ -45,9 +45,12 @@ export default function PregnancyArchive() {
     }
   });
   
-  const { data: baby } = useQuery({
+  const { data: baby } = useQuery<{ birthDate: string }>({
     queryKey: [`/api/babies/${babyId}`],
-    enabled: !!pregnancy?.babyId
+    enabled: !!pregnancy?.babyId,
+    placeholderData: {
+      birthDate: "2024-06-10T00:00:00Z"
+    }
   });
   
   // Calculate pregnancy duration

@@ -23,7 +23,7 @@ export default function Charts() {
   const renderDetailedChart = (data: StatsDaily[], dataKey: keyof StatsDaily, color: string, title: string, unit: string) => {
     if (!data || data.length === 0) return null;
 
-    const maxValue = Math.max(...data.map(d => d[dataKey]));
+    const maxValue = Math.max(...data.map(d => Number(d[dataKey]) || 0));
 
     return (
       <Card className="mb-4">
@@ -33,7 +33,7 @@ export default function Charts() {
         <CardContent>
           <div className="flex items-end justify-between space-x-2 h-32 mb-4">
             {data.map((day, index) => {
-              const height = maxValue > 0 ? (day[dataKey] / maxValue) * 120 : 4;
+              const height = maxValue > 0 ? (Number(day[dataKey]) / maxValue) * 120 : 4;
               return (
                 <div key={day.date} className="flex flex-col items-center flex-1">
                   <div className="flex flex-col justify-end h-32">
@@ -56,13 +56,13 @@ export default function Charts() {
           <div className="text-sm text-gray-600">
             <p>Average: {
               dataKey === 'sleepDuration' 
-                ? `${Math.round((data.reduce((sum, d) => sum + d[dataKey], 0) / data.length) / 60)}h` 
-                : `${Math.round(data.reduce((sum, d) => sum + d[dataKey], 0) / data.length)}${unit}`
+                ? `${Math.round((data.reduce((sum, d) => sum + Number(d[dataKey]), 0) / data.length) / 60)}h` 
+                : `${Math.round(data.reduce((sum, d) => sum + Number(d[dataKey]), 0) / data.length)}${unit}`
             }</p>
             <p>Total this week: {
               dataKey === 'sleepDuration' 
-                ? `${Math.round(data.reduce((sum, d) => sum + d[dataKey], 0) / 60)}h` 
-                : `${data.reduce((sum, d) => sum + d[dataKey], 0)}${unit}`
+                ? `${Math.round(data.reduce((sum, d) => sum + Number(d[dataKey]), 0) / 60)}h` 
+                : `${data.reduce((sum, d) => sum + Number(d[dataKey]), 0)}${unit}`
             }</p>
           </div>
         </CardContent>

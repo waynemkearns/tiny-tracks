@@ -27,7 +27,7 @@ export default function NotesPage() {
   const queryClient = useQueryClient();
   const babyId = 1; // TODO: Get from context/route params
 
-  const { data: notes = [], isLoading } = useQuery({
+  const { data: notes = [], isLoading } = useQuery<StandaloneNote[]>({
     queryKey: [`/api/babies/${babyId}/notes`],
   });
 
@@ -195,7 +195,7 @@ export default function NotesPage() {
                   {tags.map((tag) => (
                     <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
                       <span>{tag}</span>
-                      <button onClick={() => removeTag(tag)}>
+                      <button onClick={() => removeTag(tag)} aria-label={`Remove tag ${tag}`}>
                         <Trash2 className="h-3 w-3" />
                       </button>
                     </Badge>

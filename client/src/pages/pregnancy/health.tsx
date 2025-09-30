@@ -54,13 +54,13 @@ export default function PregnancyHealth() {
   });
 
   // Process weight data for chart
-  const weightChartData = weightData?.map(item => ({
+  const weightChartData = (weightData || []).map(item => ({
     date: format(new Date(item.timestamp), 'MM/dd'),
     weight: parseFloat(item.value)
   })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Process BP data for chart
-  const bpChartData = bloodPressureData?.map(item => {
+  const bpChartData = (bloodPressureData || []).map(item => {
     const [systolic, diastolic] = item.value.split('/').map(Number);
     return {
       date: format(new Date(item.timestamp), 'MM/dd'),
