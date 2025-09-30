@@ -38,11 +38,21 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
   const [sleepCategory, setSleepCategory] = useState<'nap' | 'night'>('nap');
   const [sleepStartTime, setSleepStartTime] = useState(format(new Date(), 'HH:mm'));
   const [sleepEndTime, setSleepEndTime] = useState('');
+  // Sleep notes/tags
+  const [sleepNotesOpen, setSleepNotesOpen] = useState(false);
+  const [sleepAdditionalNotes, setSleepAdditionalNotes] = useState<string[]>(['']);
+  const [sleepTags, setSleepTags] = useState<string[]>([]);
+  const [sleepNewTag, setSleepNewTag] = useState('');
 
   // Health state
   const [healthType, setHealthType] = useState<'temperature' | 'mood' | 'rash' | 'other'>('temperature');
   const [healthValue, setHealthValue] = useState('');
   const [healthTime, setHealthTime] = useState(format(new Date(), 'HH:mm'));
+  // Health notes/tags
+  const [healthNotesOpen, setHealthNotesOpen] = useState(false);
+  const [healthAdditionalNotes, setHealthAdditionalNotes] = useState<string[]>(['']);
+  const [healthTags, setHealthTags] = useState<string[]>([]);
+  const [healthNewTag, setHealthNewTag] = useState('');
 
   // Enhanced Notes & Attachments state
   const [showNotesSection, setShowNotesSection] = useState(false);
@@ -131,6 +141,16 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
     setTags([]);
     setNewTag('');
     setShowNotesSection(false);
+    // sleep
+    setSleepNotesOpen(false);
+    setSleepAdditionalNotes(['']);
+    setSleepTags([]);
+    setSleepNewTag('');
+    // health
+    setHealthNotesOpen(false);
+    setHealthAdditionalNotes(['']);
+    setHealthTags([]);
+    setHealthNewTag('');
   };
 
   const addNote = () => {
@@ -212,10 +232,13 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
       const [hours, minutes] = sleepStartTime.split(':');
       const startTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
 
-      const sleepData = {
+      const sleepData: any = {
         type: sleepCategory,
         startTime: startTime.toISOString(),
       };
+      const validNotes = sleepAdditionalNotes.filter(n => n.trim() !== '');
+      if (validNotes.length > 0) sleepData.attachedNotes = validNotes;
+      if (sleepTags.length > 0) sleepData.tags = sleepTags;
 
       createSleepMutation.mutate(sleepData);
     } else if (sleepEndTime) {
@@ -232,12 +255,15 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
 
       const duration = Math.round((endTime.getTime() - startTime.getTime()) / (1000 * 60));
 
-      const sleepData = {
+      const sleepData: any = {
         type: sleepCategory,
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString(),
         duration,
       };
+      const validNotes = sleepAdditionalNotes.filter(n => n.trim() !== '');
+      if (validNotes.length > 0) sleepData.attachedNotes = validNotes;
+      if (sleepTags.length > 0) sleepData.tags = sleepTags;
 
       createSleepMutation.mutate(sleepData);
     }
@@ -248,11 +274,14 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
     const [hours, minutes] = healthTime.split(':');
     const timestamp = new Date(today.getFullYear(), today.getMonth(), today.getDate(), parseInt(hours), parseInt(minutes));
 
-    const healthData = {
+    const healthData: any = {
       type: healthType,
       value: healthValue,
       timestamp: timestamp.toISOString(),
     };
+    const validNotes = healthAdditionalNotes.filter(n => n.trim() !== '');
+    if (validNotes.length > 0) healthData.attachedNotes = validNotes;
+    if (healthTags.length > 0) healthData.tags = healthTags;
 
     createHealthMutation.mutate(healthData);
   };
@@ -436,7 +465,7 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
                       {tags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
                           <span>{tag}</span>
-                          <button onClick={() => removeTag(tag)} className="ml-1">
+                          <button onClick={() => removeTag(tag)} className="ml-1" aria-label="Remove tag">
                             <X className="h-3 w-3" />
                           </button>
                         </Badge>
@@ -587,7 +616,7 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
                       {tags.map((tag) => (
                         <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
                           <span>{tag}</span>
-                          <button onClick={() => removeTag(tag)} className="ml-1">
+                          <button onClick={() => removeTag(tag)} className="ml-1" aria-label="Remove tag">
                             <X className="h-3 w-3" />
                           </button>
                         </Badge>
@@ -687,6 +716,91 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
                 )}
               </div>
 
+              {/* Enhanced Notes & Attachments for Sleep */}
+              <Collapsible open={sleepNotesOpen} onOpenChange={setSleepNotesOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full flex items-center justify-between">
+                    <span className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Add Notes & Tags</span>
+                    </span>
+                    <span className="text-xs text-gray-500">Optional</span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-sm font-medium">Additional Notes</Label>
+                    {sleepAdditionalNotes.map((note, index) => (
+                      <div key={index} className="flex space-x-2 mt-2">
+                        <Textarea
+                          placeholder="Add details (environment, routines, etc.)..."
+                          value={note}
+                          onChange={(e) => {
+                            const next = [...sleepAdditionalNotes];
+                            next[index] = e.target.value;
+                            setSleepAdditionalNotes(next);
+                          }}
+                          className="min-h-[60px]"
+                        />
+                        {sleepAdditionalNotes.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setSleepAdditionalNotes(sleepAdditionalNotes.filter((_, i) => i !== index))}
+                            className="flex-shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSleepAdditionalNotes([...sleepAdditionalNotes, ''])}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Note
+                    </Button>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Tags</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {sleepTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                          <span>{tag}</span>
+                          <button onClick={() => setSleepTags(sleepTags.filter(t => t !== tag))} className="ml-1" aria-label="Remove tag">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        placeholder="Add tag (e.g., over-tired, car sleep)"
+                        value={sleepNewTag}
+                        onChange={(e) => setSleepNewTag(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && sleepNewTag.trim() && !sleepTags.includes(sleepNewTag.trim())) {
+                            setSleepTags([...sleepTags, sleepNewTag.trim()]);
+                            setSleepNewTag('');
+                          }
+                        }}
+                      />
+                      <Button size="sm" onClick={() => {
+                        if (sleepNewTag.trim() && !sleepTags.includes(sleepNewTag.trim())) {
+                          setSleepTags([...sleepTags, sleepNewTag.trim()]);
+                          setSleepNewTag('');
+                        }
+                      }}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
               <Button 
                 onClick={handleSaveSleep} 
                 className="w-full bg-purple-500 hover:bg-purple-600"
@@ -758,6 +872,91 @@ export default function QuickEntryModal({ babyId, isOpen, onClose, defaultTab = 
                   />
                 </div>
               </div>
+
+              {/* Enhanced Notes & Tags for Health */}
+              <Collapsible open={healthNotesOpen} onOpenChange={setHealthNotesOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" className="w-full flex items-center justify-between">
+                    <span className="flex items-center space-x-2">
+                      <FileText className="h-4 w-4" />
+                      <span>Add Notes & Tags</span>
+                    </span>
+                    <span className="text-xs text-gray-500">Optional</span>
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-4 mt-4">
+                  <div>
+                    <Label className="text-sm font-medium">Additional Notes</Label>
+                    {healthAdditionalNotes.map((note, index) => (
+                      <div key={index} className="flex space-x-2 mt-2">
+                        <Textarea
+                          placeholder="Symptoms, meds, context..."
+                          value={note}
+                          onChange={(e) => {
+                            const next = [...healthAdditionalNotes];
+                            next[index] = e.target.value;
+                            setHealthAdditionalNotes(next);
+                          }}
+                          className="min-h-[60px]"
+                        />
+                        {healthAdditionalNotes.length > 1 && (
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setHealthAdditionalNotes(healthAdditionalNotes.filter((_, i) => i !== index))}
+                            className="flex-shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setHealthAdditionalNotes([...healthAdditionalNotes, ''])}
+                      className="mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Note
+                    </Button>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Tags</Label>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {healthTags.map((tag) => (
+                        <Badge key={tag} variant="secondary" className="flex items-center space-x-1">
+                          <span>{tag}</span>
+                          <button onClick={() => setHealthTags(healthTags.filter(t => t !== tag))} className="ml-1" aria-label="Remove tag">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <div className="flex space-x-2 mt-2">
+                      <Input
+                        placeholder="Add tag (e.g., fever, meds)"
+                        value={healthNewTag}
+                        onChange={(e) => setHealthNewTag(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter' && healthNewTag.trim() && !healthTags.includes(healthNewTag.trim())) {
+                            setHealthTags([...healthTags, healthNewTag.trim()]);
+                            setHealthNewTag('');
+                          }
+                        }}
+                      />
+                      <Button size="sm" onClick={() => {
+                        if (healthNewTag.trim() && !healthTags.includes(healthNewTag.trim())) {
+                          setHealthTags([...healthTags, healthNewTag.trim()]);
+                          setHealthNewTag('');
+                        }
+                      }}>
+                        <Tag className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
 
               <Button 
                 onClick={handleSaveHealth} 

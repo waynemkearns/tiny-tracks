@@ -1,0 +1,412 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Baby Wellness Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4A90E2',
+                        secondary: '#7ED321',
+                        accent: '#F5A623',
+                        error: '#D0021B',
+                        surface: '#FFFFFF',
+                        background: '#FAFAFA',
+                    }
+                }
+            }
+        };
+    </script>
+    <style>
+        .floating-fab {
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+        }
+        .card-shadow {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .quick-entry-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        @media (min-width: 480px) {
+            .quick-entry-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-background text-gray-800">
+    <!-- @COMPONENT: MobileAppContainer -->
+    <div class="max-w-md mx-auto bg-white min-h-screen relative">
+        
+        <!-- @COMPONENT: AppHeader -->
+        <header class="bg-primary text-white p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="material-icons">child_care</span>
+                <div>
+                    <h1 class="text-lg font-semibold" data-bind="baby.name">Emma's Tracker</h1>
+                    <p class="text-sm opacity-90" data-bind="baby.age">3 months, 2 weeks</p>
+                </div>
+            </div>
+            <button class="material-icons text-white" data-event="click:openSettings">settings</button>
+        </header>
+        <!-- @END_COMPONENT: AppHeader -->
+
+        <!-- @COMPONENT: QuickStatsOverview -->
+        <section class="p-4 bg-white">
+            <h2 class="text-lg font-semibold mb-3">Today's Summary</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-blue-50 p-3 rounded-xl card-shadow">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="material-icons text-blue-600 text-xl">restaurant</span>
+                        <span class="text-sm font-medium text-blue-800">Feeds</span>
+                    </div>
+                    <p class="text-2xl font-bold text-blue-900" data-bind="today.feeds">6</p>
+                    <p class="text-xs text-blue-600">Last: 2:30 PM</p>
+                </div>
+                <div class="bg-yellow-50 p-3 rounded-xl card-shadow">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="material-icons text-yellow-600 text-xl">baby_changing_station</span>
+                        <span class="text-sm font-medium text-yellow-800">Nappies</span>
+                    </div>
+                    <p class="text-2xl font-bold text-yellow-900" data-bind="today.nappies">4</p>
+                    <p class="text-xs text-yellow-600">Last: 1:45 PM</p>
+                </div>
+                <div class="bg-purple-50 p-3 rounded-xl card-shadow">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="material-icons text-purple-600 text-xl">bedtime</span>
+                        <span class="text-sm font-medium text-purple-800">Sleep</span>
+                    </div>
+                    <p class="text-2xl font-bold text-purple-900" data-bind="today.sleep">11h 30m</p>
+                    <p class="text-xs text-purple-600">Currently: Awake</p>
+                </div>
+                <div class="bg-green-50 p-3 rounded-xl card-shadow">
+                    <div class="flex items-center space-x-2 mb-1">
+                        <span class="material-icons text-green-600 text-xl">favorite</span>
+                        <span class="text-sm font-medium text-green-800">Mood</span>
+                    </div>
+                    <p class="text-2xl font-bold text-green-900" data-bind="today.mood">😊</p>
+                    <p class="text-xs text-green-600">Happy & Alert</p>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: QuickStatsOverview -->
+
+        <!-- @COMPONENT: QuickEntrySection -->
+        <section class="p-4 bg-gray-50">
+            <h3 class="text-lg font-semibold mb-3">Quick Entry</h3>
+            <div class="quick-entry-grid">
+                <button class="bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors" data-event="click:quickFeed">
+                    <span class="material-icons text-2xl">restaurant</span>
+                    <span class="text-sm font-medium">Feed</span>
+                </button>
+                <button class="bg-yellow-500 hover:bg-yellow-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors" data-event="click:quickNappy">
+                    <span class="material-icons text-2xl">baby_changing_station</span>
+                    <span class="text-sm font-medium">Nappy</span>
+                </button>
+                <button class="bg-purple-500 hover:bg-purple-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors" data-event="click:quickSleep">
+                    <span class="material-icons text-2xl">bedtime</span>
+                    <span class="text-sm font-medium">Sleep</span>
+                </button>
+                <button class="bg-orange-500 hover:bg-orange-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors" data-event="click:quickHealth">
+                    <span class="material-icons text-2xl">health_and_safety</span>
+                    <span class="text-sm font-medium">Health</span>
+                </button>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: QuickEntrySection -->
+
+        <!-- @COMPONENT: RecentActivityFeed -->
+        <section class="p-4 bg-white">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold">Recent Activity</h3>
+                <button class="text-primary text-sm font-medium" data-event="click:viewAllActivity">View All</button>
+            </div>
+            
+            <!-- @MAP: recentActivities.map(activity => ( -->
+            <div class="space-y-3">
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg" data-mock="true">
+                    <div class="bg-blue-100 p-2 rounded-full">
+                        <span class="material-icons text-blue-600">restaurant</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium">Bottle Feed</p>
+                        <p class="text-sm text-gray-600">120ml • 2:30 PM</p>
+                    </div>
+                    <button class="material-icons text-gray-400" data-event="click:editEntry">edit</button>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg" data-mock="true">
+                    <div class="bg-yellow-100 p-2 rounded-full">
+                        <span class="material-icons text-yellow-600">baby_changing_station</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium">Wet Nappy</p>
+                        <p class="text-sm text-gray-600">1:45 PM</p>
+                    </div>
+                    <button class="material-icons text-gray-400" data-event="click:editEntry">edit</button>
+                </div>
+                
+                <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg" data-mock="true">
+                    <div class="bg-purple-100 p-2 rounded-full">
+                        <span class="material-icons text-purple-600">bedtime</span>
+                    </div>
+                    <div class="flex-1">
+                        <p class="font-medium">Nap</p>
+                        <p class="text-sm text-gray-600">45 minutes • 12:00 PM - 12:45 PM</p>
+                    </div>
+                    <button class="material-icons text-gray-400" data-event="click:editEntry">edit</button>
+                </div>
+            </div>
+            <!-- @END_MAP )) -->
+        </section>
+        <!-- @END_COMPONENT: RecentActivityFeed -->
+
+        <!-- @COMPONENT: DataVisualizationPreview -->
+        <section class="p-4 bg-white border-t">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold">This Week's Patterns</h3>
+                <button class="text-primary text-sm font-medium" data-event="click:viewCharts">View Charts</button>
+            </div>
+            
+            <!-- Feeding Pattern Chart Preview -->
+            <div class="bg-blue-50 p-4 rounded-xl mb-3">
+                <h4 class="font-medium text-blue-800 mb-2">Feeding Pattern</h4>
+                <div class="flex items-end space-x-1 h-16">
+                    <!-- @FUNCTIONALITY: This should show a bar chart of daily feeding frequency -->
+                    <div class="bg-blue-400 w-6 h-8 rounded-t"></div>
+                    <div class="bg-blue-400 w-6 h-12 rounded-t"></div>
+                    <div class="bg-blue-400 w-6 h-10 rounded-t"></div>
+                    <div class="bg-blue-500 w-6 h-16 rounded-t"></div>
+                    <div class="bg-blue-400 w-6 h-14 rounded-t"></div>
+                    <div class="bg-blue-400 w-6 h-11 rounded-t"></div>
+                    <div class="bg-blue-300 w-6 h-6 rounded-t border-2 border-blue-500"></div>
+                </div>
+                <div class="flex justify-between text-xs text-blue-600 mt-1">
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                    <span>Today</span>
+                </div>
+            </div>
+            
+            <!-- Sleep Pattern Chart Preview -->
+            <div class="bg-purple-50 p-4 rounded-xl">
+                <h4 class="font-medium text-purple-800 mb-2">Sleep Duration</h4>
+                <div class="flex items-end space-x-1 h-16">
+                    <!-- @FUNCTIONALITY: This should show a bar chart of daily sleep hours -->
+                    <div class="bg-purple-400 w-6 h-12 rounded-t"></div>
+                    <div class="bg-purple-400 w-6 h-10 rounded-t"></div>
+                    <div class="bg-purple-400 w-6 h-14 rounded-t"></div>
+                    <div class="bg-purple-400 w-6 h-13 rounded-t"></div>
+                    <div class="bg-purple-400 w-6 h-11 rounded-t"></div>
+                    <div class="bg-purple-500 w-6 h-16 rounded-t"></div>
+                    <div class="bg-purple-300 w-6 h-10 rounded-t border-2 border-purple-500"></div>
+                </div>
+                <div class="flex justify-between text-xs text-purple-600 mt-1">
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                    <span>Today</span>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: DataVisualizationPreview -->
+
+        <!-- @COMPONENT: FloatingActionButton -->
+        <div class="fixed bottom-20 right-4">
+            <button class="bg-primary hover:bg-blue-600 text-white p-4 rounded-full floating-fab transition-colors" data-event="click:openQuickEntry">
+                <span class="material-icons text-2xl">add</span>
+            </button>
+        </div>
+        <!-- @END_COMPONENT: FloatingActionButton -->
+
+        <!-- @COMPONENT: BottomNavigation -->
+        <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 max-w-md mx-auto">
+            <div class="flex">
+                <button class="flex-1 flex flex-col items-center py-2 px-1 text-primary" data-event="click:navigateHome">
+                    <span class="material-icons text-xl">home</span>
+                    <span class="text-xs mt-1">Home</span>
+                </button>
+                <button class="flex-1 flex flex-col items-center py-2 px-1 text-gray-400" data-event="click:navigateCharts">
+                    <span class="material-icons text-xl">analytics</span>
+                    <span class="text-xs mt-1">Charts</span>
+                </button>
+                <button class="flex-1 flex flex-col items-center py-2 px-1 text-gray-400" data-event="click:navigateGrowth">
+                    <span class="material-icons text-xl">trending_up</span>
+                    <span class="text-xs mt-1">Growth</span>
+                </button>
+                <button class="flex-1 flex flex-col items-center py-2 px-1 text-gray-400" data-event="click:navigateExport">
+                    <span class="material-icons text-xl">share</span>
+                    <span class="text-xs mt-1">Export</span>
+                </button>
+                <button class="flex-1 flex flex-col items-center py-2 px-1 text-gray-400" data-event="click:navigateSettings">
+                    <span class="material-icons text-xl">person</span>
+                    <span class="text-xs mt-1">Profile</span>
+                </button>
+            </div>
+        </nav>
+        <!-- @END_COMPONENT: BottomNavigation -->
+
+        <!-- @COMPONENT: QuickEntryModal [Hidden by default] -->
+        <div class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden" id="quickEntryModal" data-event="click:closeModal">
+            <div class="fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl max-w-md mx-auto" data-event="click:preventDefault">
+                <div class="p-4 border-b">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold">Quick Entry</h3>
+                        <button class="material-icons text-gray-400" data-event="click:closeModal">close</button>
+                    </div>
+                </div>
+                
+                <div class="p-4 space-y-4">
+                    <!-- Feed Entry -->
+                    <div class="bg-blue-50 p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="material-icons text-blue-600">restaurant</span>
+                                <span class="font-medium text-blue-800">Feed</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-blue-500 text-white text-sm rounded-full">Bottle</button>
+                                <button class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">Breast</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="number" placeholder="120" class="w-20 p-2 border rounded-lg text-center" data-bind="feed.amount">
+                            <span class="text-sm">ml</span>
+                            <input type="time" class="p-2 border rounded-lg" data-bind="feed.time">
+                            <button class="bg-blue-500 text-white px-4 py-2 rounded-lg" data-event="click:saveFeed">Save</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Nappy Entry -->
+                    <div class="bg-yellow-50 p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="material-icons text-yellow-600">baby_changing_station</span>
+                                <span class="font-medium text-yellow-800">Nappy</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-yellow-500 text-white text-sm rounded-full">Wet</button>
+                                <button class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">Soiled</button>
+                                <button class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">Both</button>
+                            </div>
+                            <input type="time" class="p-2 border rounded-lg" data-bind="nappy.time">
+                            <button class="bg-yellow-500 text-white px-4 py-2 rounded-lg" data-event="click:saveNappy">Save</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Sleep Entry -->
+                    <div class="bg-purple-50 p-4 rounded-xl">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center space-x-2">
+                                <span class="material-icons text-purple-600">bedtime</span>
+                                <span class="font-medium text-purple-800">Sleep</span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="px-3 py-1 bg-purple-500 text-white text-sm rounded-full">Start</button>
+                                <button class="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-full">End</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <input type="time" placeholder="Start" class="p-2 border rounded-lg" data-bind="sleep.startTime">
+                            <span class="text-sm">to</span>
+                            <input type="time" placeholder="End" class="p-2 border rounded-lg" data-bind="sleep.endTime">
+                            <button class="bg-purple-500 text-white px-4 py-2 rounded-lg" data-event="click:saveSleep">Save</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4">
+                    <button class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg" data-event="click:closeModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: QuickEntryModal -->
+
+        <!-- @COMPONENT: HealthAlert [Conditional display] -->
+        <div class="fixed top-16 left-4 right-4 bg-orange-100 border-l-4 border-orange-500 p-4 rounded-lg shadow-lg z-40 max-w-md mx-auto hidden" id="healthAlert">
+            <div class="flex items-start space-x-3">
+                <span class="material-icons text-orange-600">warning</span>
+                <div class="flex-1">
+                    <h4 class="font-semibold text-orange-800">Health Reminder</h4>
+                    <p class="text-sm text-orange-700 mt-1">It's been 4 hours since the last feed. Consider checking if baby is hungry.</p>
+                </div>
+                <button class="material-icons text-orange-600" data-event="click:dismissAlert">close</button>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: HealthAlert -->
+
+    </div>
+    <!-- @END_COMPONENT: MobileAppContainer -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        
+        (function() {
+            // Modal controls
+            const modal = document.getElementById('quickEntryModal');
+            const fab = document.querySelector('[data-event="click:openQuickEntry"]');
+            const closeButtons = document.querySelectorAll('[data-event="click:closeModal"]');
+            
+            if (fab && modal) {
+                fab.addEventListener('click', function() {
+                    modal.classList.remove('hidden');
+                });
+            }
+            
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    if (e.target === e.currentTarget || e.target.classList.contains('bg-black')) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Prevent modal close when clicking inside modal content
+            const modalContent = document.querySelector('[data-event="click:preventDefault"]');
+            if (modalContent) {
+                modalContent.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+            
+            // Sample health alert display (would be triggered by actual health logic)
+            const healthAlert = document.getElementById('healthAlert');
+            setTimeout(() => {
+                if (healthAlert) {
+                    healthAlert.classList.remove('hidden');
+                    setTimeout(() => {
+                        healthAlert.classList.add('hidden');
+                    }, 5000);
+                }
+            }, 3000);
+            
+            // Alert dismiss
+            const dismissAlert = document.querySelector('[data-event="click:dismissAlert"]');
+            if (dismissAlert && healthAlert) {
+                dismissAlert.addEventListener('click', function() {
+                    healthAlert.classList.add('hidden');
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,10 +1,14 @@
 import { 
   babies, feeds, nappies, sleepSessions, healthRecords, growthRecords, vaccinations, users, standaloneNotes,
+  pregnancies, contractions, fetalMovements, maternalHealth, pregnancyAppointments, preparationChecklists,
   type Baby, type InsertBaby, type Feed, type InsertFeed, type Nappy, type InsertNappy,
   type SleepSession, type InsertSleepSession, type HealthRecord, type InsertHealthRecord,
   type GrowthRecord, type InsertGrowthRecord, type Vaccination, type InsertVaccination,
-  type User, type InsertUser, type StandaloneNote, type InsertStandaloneNote
-} from "@shared/schema";
+  type User, type InsertUser, type StandaloneNote, type InsertStandaloneNote,
+  type Pregnancy, type InsertPregnancy, type Contraction, type InsertContraction,
+  type FetalMovement, type InsertFetalMovement, type MaternalHealth, type InsertMaternalHealth,
+  type PregnancyAppointment, type InsertPregnancyAppointment, type PreparationChecklist, type InsertPreparationChecklist
+} from "./shared";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, sql } from "drizzle-orm";
 
@@ -13,6 +17,38 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPregnancyMode(id: number, pregnancyMode: boolean): Promise<User | undefined>;
+
+  // Pregnancy tracking methods
+  createPregnancy(pregnancy: InsertPregnancy): Promise<Pregnancy>;
+  getPregnancy(id: number): Promise<Pregnancy | undefined>;
+  getPregnancies(userId: number): Promise<Pregnancy[]>;
+  updatePregnancy(id: number, pregnancy: Partial<InsertPregnancy>): Promise<Pregnancy | undefined>;
+  
+  // Contraction tracking
+  createContraction(contraction: InsertContraction): Promise<Contraction>;
+  getContractions(pregnancyId: number, limit?: number): Promise<Contraction[]>;
+  updateContraction(id: number, contraction: Partial<InsertContraction>): Promise<Contraction | undefined>;
+  
+  // Fetal Movement tracking
+  createFetalMovement(movement: InsertFetalMovement): Promise<FetalMovement>;
+  getFetalMovements(pregnancyId: number, limit?: number): Promise<FetalMovement[]>;
+  
+  // Maternal Health tracking
+  createMaternalHealth(health: InsertMaternalHealth): Promise<MaternalHealth>;
+  getMaternalHealth(pregnancyId: number, type?: string, limit?: number): Promise<MaternalHealth[]>;
+  updateMaternalHealth(id: number, health: Partial<InsertMaternalHealth>): Promise<MaternalHealth | undefined>;
+  
+  // Pregnancy Appointments
+  createPregnancyAppointment(appointment: InsertPregnancyAppointment): Promise<PregnancyAppointment>;
+  getPregnancyAppointments(pregnancyId: number): Promise<PregnancyAppointment[]>;
+  updatePregnancyAppointment(id: number, appointment: Partial<InsertPregnancyAppointment>): Promise<PregnancyAppointment | undefined>;
+  deletePregnancyAppointment(id: number): Promise<boolean>;
+  
+  // Preparation Checklists
+  createPreparationChecklist(checklist: InsertPreparationChecklist): Promise<PreparationChecklist>;
+  getPreparationChecklists(pregnancyId: number, type?: string): Promise<PreparationChecklist[]>;
+  updatePreparationChecklist(id: number, checklist: Partial<InsertPreparationChecklist>): Promise<PreparationChecklist | undefined>;
 
   // Baby methods
   getBaby(id: number): Promise<Baby | undefined>;
@@ -102,6 +138,162 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     const [user] = await db.insert(users).values(insertUser).returning();
     return user;
+  }
+
+  async updateUserPregnancyMode(id: number, pregnancyMode: boolean): Promise<User | undefined> {
+    const [updatedUser] = await db.update(users)
+      .set({ pregnancyMode })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser || undefined;
+  }
+
+  // Pregnancy tracking methods
+  async createPregnancy(pregnancy: InsertPregnancy): Promise<Pregnancy> {
+    const [newPregnancy] = await db.insert(pregnancies).values(pregnancy).returning();
+    return newPregnancy;
+  }
+
+  async getPregnancy(id: number): Promise<Pregnancy | undefined> {
+    const [pregnancy] = await db.select().from(pregnancies).where(eq(pregnancies.id, id));
+    return pregnancy || undefined;
+  }
+
+  async getPregnancies(userId: number): Promise<Pregnancy[]> {
+    return await db.select().from(pregnancies)
+      .where(eq(pregnancies.userId, userId))
+      .orderBy(desc(pregnancies.createdAt));
+  }
+
+  async updatePregnancy(id: number, pregnancy: Partial<InsertPregnancy>): Promise<Pregnancy | undefined> {
+    const [updatedPregnancy] = await db.update(pregnancies)
+      .set(pregnancy)
+      .where(eq(pregnancies.id, id))
+      .returning();
+    return updatedPregnancy || undefined;
+  }
+
+  // Contraction tracking
+  async createContraction(contraction: InsertContraction): Promise<Contraction> {
+    const [newContraction] = await db.insert(contractions).values(contraction).returning();
+    return newContraction;
+  }
+
+  async getContractions(pregnancyId: number, limit = 50): Promise<Contraction[]> {
+    return await db.select().from(contractions)
+      .where(eq(contractions.pregnancyId, pregnancyId))
+      .orderBy(desc(contractions.startTime))
+      .limit(limit);
+  }
+
+  async updateContraction(id: number, contraction: Partial<InsertContraction>): Promise<Contraction | undefined> {
+    const [updatedContraction] = await db.update(contractions)
+      .set(contraction)
+      .where(eq(contractions.id, id))
+      .returning();
+    return updatedContraction || undefined;
+  }
+
+  // Fetal Movement tracking
+  async createFetalMovement(movement: InsertFetalMovement): Promise<FetalMovement> {
+    const [newMovement] = await db.insert(fetalMovements).values(movement).returning();
+    return newMovement;
+  }
+
+  async getFetalMovements(pregnancyId: number, limit = 50): Promise<FetalMovement[]> {
+    return await db.select().from(fetalMovements)
+      .where(eq(fetalMovements.pregnancyId, pregnancyId))
+      .orderBy(desc(fetalMovements.timestamp))
+      .limit(limit);
+  }
+
+  // Maternal Health tracking
+  async createMaternalHealth(health: InsertMaternalHealth): Promise<MaternalHealth> {
+    const [newHealth] = await db.insert(maternalHealth).values(health).returning();
+    return newHealth;
+  }
+
+  async getMaternalHealth(pregnancyId: number, type?: string, limit = 50): Promise<MaternalHealth[]> {
+    if (type) {
+      return await db.select().from(maternalHealth)
+        .where(
+          and(
+            eq(maternalHealth.pregnancyId, pregnancyId),
+            eq(maternalHealth.type, type)
+          )
+        )
+        .orderBy(desc(maternalHealth.timestamp))
+        .limit(limit);
+    } else {
+      return await db.select().from(maternalHealth)
+        .where(eq(maternalHealth.pregnancyId, pregnancyId))
+        .orderBy(desc(maternalHealth.timestamp))
+        .limit(limit);
+    }
+  }
+
+  async updateMaternalHealth(id: number, health: Partial<InsertMaternalHealth>): Promise<MaternalHealth | undefined> {
+    const [updatedHealth] = await db.update(maternalHealth)
+      .set(health)
+      .where(eq(maternalHealth.id, id))
+      .returning();
+    return updatedHealth || undefined;
+  }
+
+  // Pregnancy Appointments
+  async createPregnancyAppointment(appointment: InsertPregnancyAppointment): Promise<PregnancyAppointment> {
+    const [newAppointment] = await db.insert(pregnancyAppointments).values(appointment).returning();
+    return newAppointment;
+  }
+
+  async getPregnancyAppointments(pregnancyId: number): Promise<PregnancyAppointment[]> {
+    return await db.select().from(pregnancyAppointments)
+      .where(eq(pregnancyAppointments.pregnancyId, pregnancyId))
+      .orderBy(pregnancyAppointments.date);
+  }
+
+  async updatePregnancyAppointment(id: number, appointment: Partial<InsertPregnancyAppointment>): Promise<PregnancyAppointment | undefined> {
+    const [updatedAppointment] = await db.update(pregnancyAppointments)
+      .set(appointment)
+      .where(eq(pregnancyAppointments.id, id))
+      .returning();
+    return updatedAppointment || undefined;
+  }
+
+  async deletePregnancyAppointment(id: number): Promise<boolean> {
+    const result = await db.delete(pregnancyAppointments).where(eq(pregnancyAppointments.id, id));
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  // Preparation Checklists
+  async createPreparationChecklist(checklist: InsertPreparationChecklist): Promise<PreparationChecklist> {
+    const [newChecklist] = await db.insert(preparationChecklists).values(checklist).returning();
+    return newChecklist;
+  }
+
+  async getPreparationChecklists(pregnancyId: number, type?: string): Promise<PreparationChecklist[]> {
+    if (type) {
+      return await db.select().from(preparationChecklists)
+        .where(
+          and(
+            eq(preparationChecklists.pregnancyId, pregnancyId),
+            eq(preparationChecklists.type, type)
+          )
+        )
+        .orderBy(preparationChecklists.createdAt);
+    } else {
+      return await db.select().from(preparationChecklists)
+        .where(eq(preparationChecklists.pregnancyId, pregnancyId))
+        .orderBy(preparationChecklists.createdAt);
+    }
+  }
+
+  async updatePreparationChecklist(id: number, checklist: Partial<InsertPreparationChecklist>): Promise<PreparationChecklist | undefined> {
+    const [updatedChecklist] = await db.update(preparationChecklists)
+      .set(checklist)
+      .where(eq(preparationChecklists.id, id))
+      .returning();
+    return updatedChecklist || undefined;
   }
 
   // Baby methods
@@ -397,7 +589,7 @@ export class DatabaseStorage implements IStorage {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const [feedsToday, nappiesShooday, sleepSessionsToday, activeSleep, lastFeed, lastNappy] = await Promise.all([
+    const [feedsToday, nappiesToday, sleepSessionsToday, activeSleep, lastFeed, lastNappy] = await Promise.all([
       this.getFeedsByDateRange(babyId, startOfDay, endOfDay),
       this.getNappiesByDateRange(babyId, startOfDay, endOfDay),
       this.getSleepSessionsByDateRange(babyId, startOfDay, endOfDay),
@@ -415,7 +607,7 @@ export class DatabaseStorage implements IStorage {
 
     return {
       feedCount: feedsToday.length,
-      nappyCount: nappiesShooday.length,
+      nappyCount: nappiesToday.length,
       sleepDuration,
       lastFeed: lastFeed[0]?.timestamp,
       lastNappy: lastNappy[0]?.timestamp,

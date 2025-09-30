@@ -229,17 +229,154 @@ export type InsertVaccination = z.infer<typeof insertVaccinationSchema>;
 export type StandaloneNote = typeof standaloneNotes.$inferSelect;
 export type InsertStandaloneNote = z.infer<typeof insertStandaloneNoteSchema>;
 
-// Users table (keeping existing)
+// Pregnancy tracking tables
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  pregnancyMode: boolean("pregnancy_mode").default(false),
 });
 
+export const pregnancies = pgTable("pregnancies", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  estimatedDueDate: timestamp("estimated_due_date").notNull(),
+  lastPeriodDate: timestamp("last_period_date").notNull(),
+  notes: text("notes"),
+  isActive: boolean("is_active").default(true),
+  babyId: integer("baby_id").references(() => babies.id), // Will be populated after birth
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const contractions = pgTable("contractions", {
+  id: serial("id").primaryKey(),
+  pregnancyId: integer("pregnancy_id").notNull().references(() => pregnancies.id),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time"),
+  duration: integer("duration"), // in seconds
+  intensity: integer("intensity"), // 1-10 scale
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const fetalMovements = pgTable("fetal_movements", {
+  id: serial("id").primaryKey(),
+  pregnancyId: integer("pregnancy_id").notNull().references(() => pregnancies.id),
+  timestamp: timestamp("timestamp").notNull(),
+  duration: integer("duration"), // in seconds, optional
+  responseToStimuli: text("response_to_stimuli"), // e.g., "food", "music", "touch"
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const maternalHealth = pgTable("maternal_health", {
+  id: serial("id").primaryKey(),
+  pregnancyId: integer("pregnancy_id").notNull().references(() => pregnancies.id),
+  type: text("type").notNull(), // "blood_pressure", "weight", "symptom", "mood"
+  timestamp: timestamp("timestamp").notNull(),
+  value: text("value"), // Could be BP reading, weight in kg, etc.
+  details: jsonb("details"), // Additional fields based on type
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const pregnancyAppointments = pgTable("pregnancy_appointments", {
+  id: serial("id").primaryKey(),
+  pregnancyId: integer("pregnancy_id").notNull().references(() => pregnancies.id),
+  title: text("title").notNull(),
+  date: timestamp("date").notNull(),
+  location: text("location"),
+  notes: text("notes"),
+  attachedMedia: text("attached_media").array(), // For ultrasound images
+  completed: boolean("completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const preparationChecklists = pgTable("preparation_checklists", {
+  id: serial("id").primaryKey(),
+  pregnancyId: integer("pregnancy_id").notNull().references(() => pregnancies.id),
+  type: text("type").notNull(), // "birth_plan", "hospital_bag", "nursery"
+  title: text("title").notNull(),
+  items: jsonb("items"), // Array of {name: string, completed: boolean}
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Relations for pregnancy tables
+export const userRelations = relations(users, ({ many }) => ({
+  pregnancies: many(pregnancies),
+}));
+
+export const pregnancyRelations = relations(pregnancies, ({ one, many }) => ({
+  user: one(users, {
+    fields: [pregnancies.userId],
+    references: [users.id],
+  }),
+  baby: one(babies, {
+    fields: [pregnancies.babyId],
+    references: [babies.id],
+  }),
+  contractions: many(contractions),
+  fetalMovements: many(fetalMovements),
+  maternalHealth: many(maternalHealth),
+  appointments: many(pregnancyAppointments),
+  checklists: many(preparationChecklists),
+}));
+
+// Insert schemas for pregnancy tables
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  pregnancyMode: true,
 });
 
+export const insertPregnancySchema = createInsertSchema(pregnancies).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertContractionSchema = createInsertSchema(contractions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFetalMovementSchema = createInsertSchema(fetalMovements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMaternalHealthSchema = createInsertSchema(maternalHealth).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPregnancyAppointmentSchema = createInsertSchema(pregnancyAppointments).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertPreparationChecklistSchema = createInsertSchema(preparationChecklists).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types for pregnancy tables
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+export type Pregnancy = typeof pregnancies.$inferSelect;
+export type InsertPregnancy = z.infer<typeof insertPregnancySchema>;
+
+export type Contraction = typeof contractions.$inferSelect;
+export type InsertContraction = z.infer<typeof insertContractionSchema>;
+
+export type FetalMovement = typeof fetalMovements.$inferSelect;
+export type InsertFetalMovement = z.infer<typeof insertFetalMovementSchema>;
+
+export type MaternalHealth = typeof maternalHealth.$inferSelect;
+export type InsertMaternalHealth = z.infer<typeof insertMaternalHealthSchema>;
+
+export type PregnancyAppointment = typeof pregnancyAppointments.$inferSelect;
+export type InsertPregnancyAppointment = z.infer<typeof insertPregnancyAppointmentSchema>;
+
+export type PreparationChecklist = typeof preparationChecklists.$inferSelect;
+export type InsertPreparationChecklist = z.infer<typeof insertPreparationChecklistSchema>;

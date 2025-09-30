@@ -23,14 +23,27 @@ export default function Profile() {
   const [babyGender, setBabyGender] = useState("");
   const [notifications, setNotifications] = useState(true);
   const [shareData, setShareData] = useState(false);
+  const [pregnancyMode, setPregnancyMode] = useState(true);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
   const babyId = 1; // Demo baby ID
+  const userId = 1; // Demo user ID
 
-  const { data: baby, isLoading } = useQuery<Baby>({
+  const { data: baby, isLoading: isLoadingBaby } = useQuery<Baby>({
     queryKey: [`/api/babies/${babyId}`],
+  });
+  
+  const { data: user, isLoading: isLoadingUser } = useQuery({
+    queryKey: [`/api/users/${userId}`],
+    // For demo purposes, use placeholderData since we don't have a real endpoint yet
+    placeholderData: { id: userId, username: "user", pregnancyMode },
+    onSuccess: (data) => {
+      if (data) {
+        setPregnancyMode(data.pregnancyMode);
+      }
+    }
   });
 
   // Update form fields when baby data loads
@@ -55,7 +68,10 @@ export default function Profile() {
 
   const updateBabyMutation = useMutation({
     mutationFn: async (data: any) => {
-      return apiRequest('PUT', `/api/babies/${babyId}`, data);
+      return apiRequest(`/api/babies/${babyId}`, {
+        method: "PUT",
+        body: JSON.stringify(data)
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/babies/${babyId}`] });
@@ -64,6 +80,32 @@ export default function Profile() {
     },
     onError: () => {
       toast({ title: "Failed to update profile", variant: "destructive" });
+    },
+  });
+
+  const updatePregnancyModeMutation = useMutation({
+    mutationFn: async (isEnabled: boolean) => {
+      return apiRequest(`/api/users/${userId}/pregnancy-mode`, {
+        method: "PUT",
+        body: JSON.stringify({ pregnancyMode: isEnabled })
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });
+      toast({ 
+        title: pregnancyMode ? "Pregnancy Mode Activated" : "Pregnancy Mode Deactivated",
+        description: pregnancyMode 
+          ? "You are now in pregnancy tracking mode" 
+          : "You have switched to baby tracking mode"
+      });
+    },
+    onError: () => {
+      // Revert state on error
+      setPregnancyMode(!pregnancyMode);
+      toast({ 
+        title: "Failed to update tracking mode", 
+        variant: "destructive"
+      });
     },
   });
 
@@ -80,12 +122,19 @@ export default function Profile() {
     });
   };
 
+  const isLoading = isLoadingBaby || isLoadingUser;
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 p-4">
         <div className="animate-pulse">Loading...</div>
       </div>
     );
+  }
+
+  const handlePregnancyModeToggle = (isEnabled: boolean) => {
+    setPregnancyMode(isEnabled);
+    updatePregnancyModeMutation.mutate(isEnabled);
   }
 
   return (
@@ -172,8 +221,19 @@ export default function Profile() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
+                <Label className="text-sm font-medium">Pregnancy Mode</Label>
+                <p className="text-xs text-gray-600">Track pregnancy instead of baby</p>
+              </div>
+              <Switch 
+                checked={pregnancyMode} 
+                onCheckedChange={handlePregnancyModeToggle}
+              />
+            </div>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div>
                 <Label className="text-sm font-medium">Notifications</Label>
-                <p className="text-xs text-gray-600">Get reminders for feeding and diaper changes</p>
+                <p className="text-xs text-gray-600">Get reminders for tracking and appointments</p>
               </div>
               <Switch 
                 checked={notifications} 
