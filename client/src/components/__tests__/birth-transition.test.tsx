@@ -14,8 +14,21 @@ jest.mock('canvas-confetti', () => jest.fn());
 global.fetch = jest.fn(() =>
   Promise.resolve({
     ok: true,
+    status: 200,
     json: () => Promise.resolve({ id: 1, name: 'Test Baby' }),
-  })
+    headers: new Headers(),
+    redirected: false,
+    statusText: "OK",
+    type: "basic",
+    url: "",
+    clone: () => ({} as Response),
+    body: null,
+    bodyUsed: false,
+    arrayBuffer: async () => new ArrayBuffer(0),
+    blob: async () => new Blob(),
+    formData: async () => new FormData(),
+    text: async () => "",
+  } as Response)
 );
 
 const queryClient = new QueryClient({
