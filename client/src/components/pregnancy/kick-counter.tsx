@@ -40,7 +40,7 @@ export default function KickCounter({ pregnancyId, onClose }: KickCounterProps) 
 
   // End the session and save data
   const endSession = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       // Clear interval timer
       if (timerRef.current) {
         clearInterval(timerRef.current);

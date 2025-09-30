@@ -70,10 +70,11 @@ export default function PregnancyHealth() {
   }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Helper function to get the latest value
-  const getLatestValue = (data: any[], type: string) => {
-    if (!data?.length) return null;
+  const getLatestValue = (data: any[] | undefined, type: string) => {
+    const safeData = data ?? [];
+    if (!safeData.length) return null;
     
-    const sortedData = [...data].sort((a, b) => 
+    const sortedData = [...safeData].sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     
