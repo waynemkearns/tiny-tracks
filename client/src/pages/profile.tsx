@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Edit, Baby as BabyIcon, Settings, Share2, Bell } from "lucide-react";
+import { ArrowLeft, Edit, Baby as BabyIcon, Settings, Share2, Bell, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -263,6 +263,14 @@ export default function Profile() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
+            <Button 
+              variant="outline" 
+              className="w-full justify-start flex items-center space-x-2"
+              onClick={() => navigate("/pregnancy/archive")}
+            >
+              <Archive className="h-4 w-4" />
+              <span>Pregnancy Archives</span>
+            </Button>
             <Button variant="outline" className="w-full justify-start">
               Export Data
             </Button>

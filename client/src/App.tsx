@@ -12,6 +12,7 @@ import Compare from "@/pages/compare";
 import Notes from "@/pages/notes";
 import PregnancyHome from "@/pages/pregnancy";
 import PregnancyHealth from "@/pages/pregnancy/health";
+import PregnancyArchive from "@/pages/pregnancy/archive";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       {/* Pregnancy routes */}
       <Route path="/pregnancy" component={PregnancyHome} />
       <Route path="/pregnancy/health" component={PregnancyHealth} />
+      <Route path="/pregnancy/archive" component={PregnancyArchive} />
       
       <Route component={NotFound} />
     </Switch>

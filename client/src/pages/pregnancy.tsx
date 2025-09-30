@@ -5,6 +5,7 @@ import { Calendar, Clock, Clipboard, Activity, Check } from "lucide-react";
 import BottomNavigation from "@/components/bottom-navigation";
 import ContractionTimer from "@/components/pregnancy/contraction-timer";
 import KickCounter from "@/components/pregnancy/kick-counter";
+import BirthTransition from "@/components/pregnancy/birth-transition";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +19,7 @@ export default function PregnancyHome() {
   // Modal states
   const [showContractionTimer, setShowContractionTimer] = useState(false);
   const [showKickCounter, setShowKickCounter] = useState(false);
+  const [showBirthTransition, setShowBirthTransition] = useState(false);
   
   const { data: pregnancy } = useQuery({
     queryKey: [`/api/pregnancies/${pregnancyId}`],
@@ -91,6 +93,15 @@ export default function PregnancyHome() {
       </header>
 
       <div className="p-4 space-y-6">
+        {/* Birth Mode Button - Special action */}
+        <button
+          onClick={() => setShowBirthTransition(true)}
+          className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white rounded-xl p-3 mb-4 flex items-center justify-center space-x-2"
+        >
+          <span className="text-xl">🎉</span>
+          <span className="font-semibold">Baby Has Arrived!</span>
+        </button>
+      
         {/* Primary Actions */}
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -273,6 +284,14 @@ export default function PregnancyHome() {
         <KickCounter
           pregnancyId={pregnancyId}
           onClose={() => setShowKickCounter(false)}
+        />
+      )}
+      
+      {/* Birth Transition Modal */}
+      {showBirthTransition && (
+        <BirthTransition
+          pregnancyId={pregnancyId}
+          onClose={() => setShowBirthTransition(false)}
         />
       )}
     </div>
