@@ -1,4 +1,6 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
+import { persistQueryClient } from "@tanstack/react-query-persist-client";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
@@ -47,11 +49,36 @@ export const queryClient = new QueryClient({
       queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
-      staleTime: Infinity,
+      staleTime: 1000 * 60 * 5, // 5 minutes
       retry: false,
+      gcTime: 1000 * 60 * 60 * 24, // 24 hours
     },
     mutations: {
       retry: false,
     },
   },
 });
+
+// Set up React Query persistence
+if (typeof window !== 'undefined') {
+  const localStoragePersister = createSyncStoragePersister({
+    storage: window.localStorage,
+    key: 'TINY_TRACKS_QUERY_CACHE',
+    throttleTime: 1000, // 1 second
+  });
+
+  persistQueryClient({
+    queryClient,
+    persister: localStoragePersister,
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours
+    buster: '1.0', // Update this when cache format changes
+    hydrateOptions: {
+      // When true, stale queries will refetch in the background on app startup
+      defaultOptions: {
+        queries: {
+          refetchOnMount: true,
+        },
+      },
+    },
+  });
+}
