@@ -22,7 +22,7 @@ export default function BloodPressureEntryModal({ pregnancyId, onClose }: BloodP
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  const addBPEntry = useMutation<MaternalHealth, Error, void>({
+  const addBPEntry = useMutation<MaternalHealth, Error>({
     mutationFn: async () => {
       setIsSubmitting(true);
       

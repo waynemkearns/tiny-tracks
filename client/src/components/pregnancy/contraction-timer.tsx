@@ -22,7 +22,7 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   const { toast } = useToast();
 
   // Start a new contraction
-  const startContraction = useMutation<Contraction, Error, void>({
+  const startContraction = useMutation<Contraction, Error>({
     mutationFn: async () => {
       const now = new Date();
       setStartTime(now);
@@ -58,8 +58,8 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
   });
 
   // Stop the current contraction
-  const stopContraction = useMutation<Contraction, Error, number>({
-    mutationFn: async (contractionId: number) => {
+  const stopContraction = useMutation<Contraction, Error, { contractionId: number }>({
+    mutationFn: async ({ contractionId }: { contractionId: number }) => {
       const endTime = new Date();
       const duration = Math.round((endTime.getTime() - (startTime?.getTime() || 0)) / 1000);
       
@@ -208,7 +208,7 @@ export default function ContractionTimer({ pregnancyId, onClose }: ContractionTi
               </Button>
             ) : (
               <Button 
-                onClick={() => stopContraction.mutate(recentContractions[0].id)}
+                onClick={() => stopContraction.mutate({ contractionId: recentContractions[0].id })}
                 size="lg" 
                 className="bg-red-600 hover:bg-red-700 text-white"
                 disabled={!recentContractions.length}

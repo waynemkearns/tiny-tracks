@@ -34,7 +34,7 @@ export default function BirthTransition({ pregnancyId, onClose }: BirthTransitio
     name: string;
   }
   
-  const birthTransition = useMutation<BirthResponse, Error, void>({
+  const birthTransition = useMutation<BirthResponse, Error>({
     mutationFn: async () => {
       setIsLoading(true);
       
