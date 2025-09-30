@@ -10,6 +10,7 @@ import BottomNavigation from "@/components/bottom-navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useLocation } from "wouter";
+import { Baby as BabyType } from "@/types/api";
 
 export default function Home() {
   const [showQuickEntry, setShowQuickEntry] = useState(false);
@@ -20,12 +21,33 @@ export default function Home() {
   const babyId = 1;
   const today = new Date();
 
-  const { data: baby } = useQuery({
+  const { data: baby } = useQuery<BabyType>({
     queryKey: [`/api/babies/${babyId}`],
+    placeholderData: {
+      id: babyId,
+      name: "Baby",
+      birthDate: new Date().toISOString(),
+      gender: "unknown",
+      userId: 1
+    }
   });
 
-  const { data: dailySummary } = useQuery({
+  interface DailySummary {
+    feedCount: number;
+    nappyCount: number;
+    sleepDuration: number;
+    lastFeed?: string;
+    lastNappy?: string;
+    currentSleepSession?: any;
+  }
+
+  const { data: dailySummary } = useQuery<DailySummary>({
     queryKey: [`/api/babies/${babyId}/summary/${format(today, 'yyyy-MM-dd')}`],
+    placeholderData: {
+      feedCount: 0,
+      nappyCount: 0,
+      sleepDuration: 0
+    }
   });
 
   const calculateAge = (birthDate: string) => {

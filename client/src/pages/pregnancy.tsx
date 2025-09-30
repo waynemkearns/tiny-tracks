@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Pregnancy, Contraction, FetalMovement, PregnancyAppointment } from "@/types/api";
 
 export default function PregnancyHome() {
   const { toast } = useToast();
@@ -21,28 +22,56 @@ export default function PregnancyHome() {
   const [showKickCounter, setShowKickCounter] = useState(false);
   const [showBirthTransition, setShowBirthTransition] = useState(false);
   
-  const { data: pregnancy } = useQuery({
+  const { data: pregnancy } = useQuery<Pregnancy>({
     queryKey: [`/api/pregnancies/${pregnancyId}`],
+    placeholderData: {
+      id: pregnancyId,
+      userId: 1,
+      estimatedDueDate: new Date().toISOString(),
+      lastPeriodDate: new Date().toISOString(),
+      isActive: true,
+      createdAt: new Date().toISOString()
+    }
   });
   
-  const { data: gestationalAge } = useQuery({
+  interface GestationalAgeData {
+    gestationalAge: {
+      weeks: number;
+      days: number;
+    };
+    trimester: number;
+    daysUntilDueDate: number;
+  }
+  
+  const { data: gestationalAge } = useQuery<GestationalAgeData>({
     queryKey: [`/api/pregnancies/${pregnancyId}/gestational-age`],
     refetchInterval: 1000 * 60 * 60 * 24, // Refetch once per day
+    placeholderData: {
+      gestationalAge: {
+        weeks: 0,
+        days: 0
+      },
+      trimester: 1,
+      daysUntilDueDate: 0
+    }
   });
   
-  const { data: contractions } = useQuery({
+  const { data: contractions } = useQuery<Contraction[]>({
     queryKey: [`/api/pregnancies/${pregnancyId}/contractions`],
     select: (data) => data?.slice(0, 3),
+    placeholderData: []
   });
   
-  const { data: appointments } = useQuery({
+  const { data: appointments } = useQuery<PregnancyAppointment[]>({
     queryKey: [`/api/pregnancies/${pregnancyId}/appointments`],
     select: (data) => data?.filter(apt => !apt.completed).slice(0, 2),
+    placeholderData: []
   });
   
-  const { data: movements } = useQuery({
+  const { data: movements } = useQuery<FetalMovement[]>({
     queryKey: [`/api/pregnancies/${pregnancyId}/movements`],
     select: (data) => data?.slice(0, 3),
+    placeholderData: []
   });
   
   // Calculate average contraction frequency if we have at least 2 contractions

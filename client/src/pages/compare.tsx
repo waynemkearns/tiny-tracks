@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import BottomNavigation from "@/components/bottom-navigation";
 import { useLocation } from "wouter";
+import { Baby, GrowthRecord } from "@/types/api";
 
 export default function Compare() {
   const [isPremium, setIsPremium] = useState(false);
@@ -16,12 +17,20 @@ export default function Compare() {
   const [, navigate] = useLocation();
   const babyId = 1;
 
-  const { data: baby } = useQuery({
+  const { data: baby } = useQuery<Baby>({
     queryKey: [`/api/babies/${babyId}`],
+    placeholderData: {
+      id: babyId,
+      name: "",
+      birthDate: new Date().toISOString(),
+      gender: "female",
+      userId: 1
+    }
   });
 
-  const { data: growthRecords } = useQuery({
+  const { data: growthRecords } = useQuery<GrowthRecord[]>({
     queryKey: [`/api/babies/${babyId}/growth`],
+    placeholderData: []
   });
 
   const calculateAge = (birthDate: string) => {
@@ -45,7 +54,7 @@ export default function Compare() {
   };
 
   const ageInMonths = baby?.birthDate ? calculateAge(baby.birthDate) : 0;
-  const latestWeight = growthRecords?.[0]?.weight ? parseFloat(growthRecords[0].weight) : 0;
+  const latestWeight = growthRecords && growthRecords.length > 0 && growthRecords[0].weight ? growthRecords[0].weight : 0;
 
   return (
     <div className="max-w-md mx-auto bg-background min-h-screen relative pb-20">

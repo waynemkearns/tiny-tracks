@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BottomNavigation from "@/components/bottom-navigation";
 import { useLocation } from "wouter";
+import { WeeklyStats, StatsDaily } from "@/types/api";
 
 export default function Charts() {
   const [, navigate] = useLocation();
@@ -12,11 +13,14 @@ export default function Charts() {
   const today = new Date();
   const weekStart = subDays(today, 6);
 
-  const { data: weeklyStats } = useQuery({
+  const { data: weeklyStats } = useQuery<WeeklyStats>({
     queryKey: [`/api/babies/${babyId}/stats/weekly/${format(weekStart, 'yyyy-MM-dd')}`],
+    placeholderData: {
+      daily: []
+    }
   });
 
-  const renderDetailedChart = (data: any[], dataKey: string, color: string, title: string, unit: string) => {
+  const renderDetailedChart = (data: StatsDaily[], dataKey: keyof StatsDaily, color: string, title: string, unit: string) => {
     if (!data || data.length === 0) return null;
 
     const maxValue = Math.max(...data.map(d => d[dataKey]));

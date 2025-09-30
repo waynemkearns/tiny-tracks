@@ -33,7 +33,7 @@ interface UnifiedTimelineProps {
 
 // Types for timeline items
 interface BaseTimelineItem {
-  id: number;
+  id: string | number;
   timestamp: string;
   type: string;
   source: "pregnancy" | "baby";

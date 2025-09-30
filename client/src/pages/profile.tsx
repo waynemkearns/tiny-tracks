@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
-import type { Baby } from "@shared/schema";
+import { Baby } from "@/types/api";
 import BottomNavigation from "@/components/bottom-navigation";
 import { useLocation } from "wouter";
 
@@ -35,16 +35,24 @@ export default function Profile() {
     queryKey: [`/api/babies/${babyId}`],
   });
   
-  const { data: user, isLoading: isLoadingUser } = useQuery({
+  interface User {
+    id: number;
+    username: string;
+    pregnancyMode: boolean;
+  }
+  
+  const { data: user, isLoading: isLoadingUser } = useQuery<User>({
     queryKey: [`/api/users/${userId}`],
     // For demo purposes, use placeholderData since we don't have a real endpoint yet
-    placeholderData: { id: userId, username: "user", pregnancyMode },
-    onSuccess: (data) => {
-      if (data) {
-        setPregnancyMode(data.pregnancyMode);
-      }
-    }
+    placeholderData: { id: userId, username: "user", pregnancyMode }
   });
+  
+  // Set pregnancy mode when user data loads
+  useEffect(() => {
+    if (user) {
+      setPregnancyMode(user.pregnancyMode);
+    }
+  }, [user]);
 
   // Update form fields when baby data loads
   useEffect(() => {
@@ -66,12 +74,27 @@ export default function Profile() {
     }
   }, [baby]);
 
+  interface UpdateBabyData {
+    name: string;
+    birthDate?: string;
+    gender?: string | null;
+  }
+  
   const updateBabyMutation = useMutation({
-    mutationFn: async (data: any) => {
-      return apiRequest(`/api/babies/${babyId}`, {
+    mutationFn: async (data: UpdateBabyData) => {
+      const response = await fetch(`/api/babies/${babyId}`, {
         method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(data)
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update baby profile');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/babies/${babyId}`] });
@@ -85,10 +108,19 @@ export default function Profile() {
 
   const updatePregnancyModeMutation = useMutation({
     mutationFn: async (isEnabled: boolean) => {
-      return apiRequest(`/api/users/${userId}/pregnancy-mode`, {
+      const response = await fetch(`/api/users/${userId}/pregnancy-mode`, {
         method: "PUT",
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ pregnancyMode: isEnabled })
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update pregnancy mode');
+      }
+      
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/users/${userId}`] });

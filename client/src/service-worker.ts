@@ -116,11 +116,17 @@ self.addEventListener('install', (event) => {
 registerRoute(
   ({ request }) => request.mode === 'navigate',
   async ({ event }) => {
+    if (!event) return new Response('No event available', { status: 500 });
+    
     try {
       // Try to fetch from network first
+      const fetchEvent = event as FetchEvent;
       return await new NetworkFirst({
         cacheName: 'pages',
-      }).handle({ request: new Request(event.request.url), event });
+      }).handle({ 
+        request: new Request(fetchEvent.request.url), 
+        event: fetchEvent 
+      });
     } catch (error) {
       // If offline, return the offline page
       const cache = await caches.open(OFFLINE_PAGE_CACHE_NAME);
@@ -150,11 +156,11 @@ self.addEventListener('notificationclick', (event) => {
   
   if (event.notification.data?.url) {
     event.waitUntil(
-      clients.openWindow(event.notification.data.url)
+      self.clients.openWindow(event.notification.data.url)
     );
   } else {
     event.waitUntil(
-      clients.openWindow('/')
+      self.clients.openWindow('/')
     );
   }
 });
