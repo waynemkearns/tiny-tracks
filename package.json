@@ -53,6 +53,7 @@
     "@tanstack/query-sync-storage-persister": "^5.90.2",
     "@tanstack/react-query": "^5.60.5",
     "@tanstack/react-query-persist-client": "^5.90.2",
+    "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -91,7 +92,6 @@
     "workbox-window": "^7.3.0",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
-    "canvas-confetti": "^1.9.3",
     "zod": "^3.24.2",
     "zod-validation-error": "^3.4.0"
   },
@@ -128,6 +128,7 @@
     "postcss": "^8.4.47",
     "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^3.4.17",
+    "ts-jest": "^29.4.4",
     "tsx": "^4.19.1",
     "typescript": "5.6.3",
     "vite": "^5.4.19"
