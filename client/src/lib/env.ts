@@ -16,7 +16,11 @@ interface EnvConfig {
 }
 
 const getEnvironment = (): string => {
-  return import.meta.env.MODE || process.env.NODE_ENV || 'development';
+  // In test/Node environments, import.meta.env is not available
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env.MODE || 'development';
+  }
+  return process.env.NODE_ENV || 'development';
 };
 
 const isProduction = getEnvironment() === 'production';
