@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: tinytracks
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false  # Set this in Render dashboard
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SENTRY_DSN
+        sync: false  # Optional - set in dashboard if using Sentry
+      - key: PLAUSIBLE_DOMAIN
+        sync: false  # Optional - set in dashboard if using Plausible
+
