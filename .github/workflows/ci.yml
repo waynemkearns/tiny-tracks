@@ -31,6 +31,12 @@ jobs:
       
     - name: Run tests
       run: npm test
+      env:
+        DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+        SESSION_SECRET: test-secret-key-for-ci-only
       
     - name: Build
       run: npm run build
+      env:
+        DATABASE_URL: postgresql://dummy:dummy@localhost:5432/dummy
+        SESSION_SECRET: test-secret-key-for-ci-only
