@@ -1,5 +1,4 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertBabySchema, insertFeedSchema, insertNappySchema, insertSleepSessionSchema,
@@ -15,7 +14,7 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import bcrypt from "bcrypt";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export async function registerRoutes(app: Express): Promise<void> {
   // Minimal auth/session scaffold
   const PgSession = connectPg(session);
   app.use(
@@ -913,6 +912,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // In serverless, we don't create an HTTP server
+  // The Express app is invoked directly by the serverless function
 }
