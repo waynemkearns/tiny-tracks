@@ -3,7 +3,7 @@ import { registerRoutes } from "../server/routes";
 
 let appPromise: Promise<Express> | null = null;
 
-function buildApp(): Promise<Express> {
+async function buildApp(): Promise<Express> {
   if (appPromise) return appPromise;
   appPromise = (async () => {
     const app = express();
@@ -16,8 +16,14 @@ function buildApp(): Promise<Express> {
 }
 
 export default async function handler(req: Request, res: Response) {
-  const app = await buildApp();
-  return (app as any)(req, res);
+  try {
+    const app = await buildApp();
+    // Properly invoke Express app as middleware
+    app(req, res);
+  } catch (error) {
+    console.error('API Error:', error);
+    res.status(500).json({ error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' });
+  }
 }
 
 
