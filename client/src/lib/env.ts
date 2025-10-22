@@ -28,7 +28,7 @@ const isDevelopment = getEnvironment() === 'development';
 
 export const envConfig: EnvConfig = {
   apiBaseUrl: isProduction 
-    ? 'https://api.tinytracks.app' 
+    ? '' // Use relative URLs in production (same domain)
     : 'http://localhost:3000',
   isProduction,
   isDevelopment,
