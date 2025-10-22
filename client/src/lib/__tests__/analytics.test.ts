@@ -1,6 +1,21 @@
 import { analytics, EventCategory } from '../analytics';
 import * as Sentry from '@sentry/react';
 
+// Mock env config
+jest.mock('../env', () => ({
+  envConfig: {
+    apiBaseUrl: 'http://localhost:3000',
+    isProduction: false,
+    isDevelopment: true,
+    appVersion: '1.1.0',
+    featureFlags: {
+      enablePregnancyTracking: true,
+      enableDataExport: true,
+      enableFeedbackForm: false,
+    }
+  }
+}));
+
 // Mock Sentry
 jest.mock('@sentry/react', () => ({
   init: jest.fn(),

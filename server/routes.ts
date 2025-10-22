@@ -13,6 +13,7 @@ import connectPg from "connect-pg-simple";
 import { pool } from "./db";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import bcrypt from "bcrypt";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Minimal auth/session scaffold
@@ -36,8 +37,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         const user = await storage.getUserByUsername(username);
         if (!user) return done(null, false);
-        // NOTE: For scaffold only; no hashing yet
-        if (user.password !== password) return done(null, false);
+        
+        // Compare hashed password
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) return done(null, false);
+        
         return done(null, { id: user.id, username: user.username });
       } catch (err) {
         return done(err as Error);
@@ -64,10 +68,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     const { username, password } = req.body || {};
     if (!username || !password) return res.status(400).json({ message: "username and password required" });
+    
+    // Validate password strength
+    if (password.length < 8) {
+      return res.status(400).json({ message: "password must be at least 8 characters" });
+    }
+    
     try {
       const existing = await storage.getUserByUsername(username);
       if (existing) return res.status(409).json({ message: "username taken" });
-      const user = await storage.createUser({ username, password });
+      
+      // Hash password before storing
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await storage.createUser({ username, password: hashedPassword });
+      
       req.login({ id: user.id, username: user.username }, (err) => {
         if (err) return res.status(500).json({ message: "login failed" });
         res.json({ id: user.id, username: user.username });
